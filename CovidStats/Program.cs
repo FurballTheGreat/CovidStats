@@ -62,7 +62,21 @@ namespace CovidStats
 
             IEnumerable<HseSchoolsFacilityValue> ParseFacilityValues(string pText, string[] pNames)
             {
-                
+                HseSchoolsFacilityValue GetValue(string[] pNames, int i, string[] splits)
+                {
+                    return new HseSchoolsFacilityValue
+                    {
+                        Name = pNames[i],
+                        NoFacilities = Int32.Parse(splits[0].Replace(",", "")),
+                        NoTested = Int32.Parse(splits[1].Replace(",", "")),
+                        NoDetected = Int32.Parse(splits[2].Replace(",", "")),
+                        DetectedPercent = Decimal.Parse(splits[3].Replace("%", "")),
+                        NoNotDetected = Int32.Parse(splits[4].Replace(",", ""))
+                    };
+                }
+
+                var runningTotal =  new HseSchoolsFacilityValue();
+
                 for (var i = 0; i < pNames.Length; i++)
                 {
                     var pos = pText.IndexOf(pNames[i], StringComparison.Ordinal);
