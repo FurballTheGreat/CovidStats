@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Dynamic;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml;
 using UglyToad.PdfPig;
-//using iTextSharp.text.pdf;
-using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
 namespace CovidStats
 {
@@ -24,21 +19,14 @@ namespace CovidStats
             {
 
                 var requestFichier = WebRequest.Create(pFileName);
-
-                //    requestFichier.Method = WebRequestMethods.Ftp.DownloadFile;
-                using (WebResponse response = requestFichier.GetResponse())
-                {
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        response.GetResponseStream().CopyTo(ms);
-                        listeByte = ms.ToArray();
-                    }
-                }
+                using WebResponse response = requestFichier.GetResponse();
+                using MemoryStream ms = new MemoryStream();
+                response.GetResponseStream().CopyTo(ms);
+                listeByte = ms.ToArray();
             }
             catch (Exception ex)
             {
                 throw ex;
-
             }
 
             IEnumerable<HseSchoolsSummaryValue> ParseSchoolValues(string pText, string[] pNames)
@@ -62,11 +50,15 @@ namespace CovidStats
 
             IEnumerable<HseSchoolsFacilityValue> ParseFacilityValues(string pText, string[] pNames)
             {
-                HseSchoolsFacilityValue GetValue(string[] pNames, int i, string[] splits)
+                HseSchoolsFacilityValue GetValue(string pName)
                 {
+                    var pos = pText.IndexOf(pName, StringComparison.Ordinal);
+                    if (pos == -1) throw new InvalidDataException("This shouldn't happen ;)");
+                    var substr = pText.Substring(pos + pName.Length);
+                    var splits = substr.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                     return new HseSchoolsFacilityValue
                     {
-                        Name = pNames[i],
+                        Name = pName,
                         NoFacilities = Int32.Parse(splits[0].Replace(",", "")),
                         NoTested = Int32.Parse(splits[1].Replace(",", "")),
                         NoDetected = Int32.Parse(splits[2].Replace(",", "")),
@@ -75,38 +67,33 @@ namespace CovidStats
                     };
                 }
 
-                var runningTotal =  new HseSchoolsFacilityValue();
+                var runningTotal =  new HseSchoolsFacilityValue { Name="Calculated Total" };
 
                 for (var i = 0; i < pNames.Length; i++)
                 {
-                    var pos = pText.IndexOf(pNames[i], StringComparison.Ordinal);
-                    if (pos == -1) throw new InvalidDataException("This shouldn't happen ;)");
-                    var substr = pText.Substring(pos + pNames[i].Length);
-                    var splits = substr.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                    //splits = splits[0].Split(" ");
-                    yield return GetValue(pNames, i, splits);
+                    var value = GetValue(pNames[i]);
+                    runningTotal.Add(value);
+                    yield return value;
                 }
+
+                var totalsValue = GetValue("Total");
+                runningTotal.DetectedPercent = Math.Round((decimal)100*runningTotal.NoDetected/runningTotal.NoTested,1);
+                if (!totalsValue.Equals(runningTotal))
+                    throw new InvalidDataException($"Calculated totals: {runningTotal}\nDo not match totals in source PDF: {totalsValue}");
             }
 
-            var allFaciltyValues = new List<HseSchoolsFacilityValue>();
-            HseSchoolsSummaryValue[] values = null;
+            var result = new HseSchoolsSummary();
+
+         
             using (var pdf = PdfDocument.Open(listeByte))
             {
                 foreach (var page in pdf.GetPages())
                 {
-                    // Either extract based on order in the underlying document with newlines and spaces.
-                    var text = ContentOrderTextExtractor.GetText(page);
-
-                    // Or based on grouping letters into words.
-                    var otherText = string.Join(" ", page.GetWords());
-
-                    // Or the raw text of the page's content stream.
                     var rawText = page.Text;
-                    var lines = rawText.Split("\n");
                     if (rawText.Contains("Summary of Mass Testing in Schools & Childcare"))
                     {
 
-                        values = ParseSchoolValues(rawText, new[]
+                        result.Values = ParseSchoolValues(rawText, new[]
                         {
                             "Number Tested",
                             "Number of Detected Cases",
@@ -118,28 +105,63 @@ namespace CovidStats
                         }).ToArray();
                         var tableStr =
                             "Table 2 Results Summary for Schools and Childcare Testing YTD (All Facility Types)";
-                        var allTypes = rawText.Substring(rawText.IndexOf(tableStr
-                            ) + tableStr.Length);
+                        var allTypes = rawText.Substring(rawText.IndexOf(tableStr) + tableStr.Length);
 
-                        allFaciltyValues.AddRange(ParseFacilityValues(allTypes, new[]
+                        result.AllFacilityTypesResultsSummary = ParseFacilityValues(allTypes, new[]
                         {
                             "Childcare",
                             "Primary",
                             "Post Primary*",
                             "Special Education"
-                        }));
+                        }).ToArray();
 
                     }
+                    else if (rawText.Contains("Summary of Mass Testing in Schools Only"))
+                    {
+                        result.Schools.Testing = ParseFacilityValues(rawText, new[]
+                        {
+                            "Primary",
+                            "Post Primary",
+                            "Special Education"
+                        }).ToArray();
+
+                        const string schoolMassSection = "Results Summary for School Facility Testing";
+                        var remainingText =
+                            rawText.Substring(rawText.IndexOf(schoolMassSection) + schoolMassSection.Length);
+
+                        result.Schools.MassTesting = ParseFacilityValues(remainingText, new[]
+                        {
+                            "Primary",
+                            "Post Primary",
+                            "Special Education"
+                        }).ToArray();
+                    }
+                    else if (rawText.Contains("Summary of Childcare Facility Testing"))
+                    {
+                        rawText = rawText.Substring(
+                            rawText.IndexOf("Table 7 Results Summary YTD for Childcare Facilities") +
+                            "Table 7 Results Summary YTD for Childcare Facilities".Length);
+                        result.Childcare.Testing = ParseFacilityValues(rawText, new[]
+                        {
+                            "Childcare",
+                        }).ToArray();
+
+                        const string childcareMassSection = "Table 8 Results Summary WK 51 for Childcare Facilities";
+                        var remainingText =
+                            rawText.Substring(rawText.IndexOf(childcareMassSection) + childcareMassSection.Length);
+
+                        result.Childcare.MassTesting = ParseFacilityValues(remainingText, new[]
+                        {
+                            "Childcare facilities",
+                        }).ToArray();
+                    }
                     else
-                        Console.WriteLine(text);
+                        Console.WriteLine(page.Text);
                 }
 
             }
-            return new HseSchoolsSummary
-            {
-                FacilityValues = allFaciltyValues.ToArray(),
-                Values = values
-            };
+
+            return result;
         }
 
         
@@ -151,7 +173,7 @@ namespace CovidStats
             var summary = LoadSummary(filePath);
             var ds = new DataContractSerializer(typeof(HseSchoolsSummary));
             var sw = new StringWriter();
-            var xml = XmlWriter.Create(sw);
+            var xml = XmlWriter.Create(sw, new XmlWriterSettings{ Indent = true });
             ds.WriteObject(xml, summary);
             xml.Flush();
             sw.Flush();
