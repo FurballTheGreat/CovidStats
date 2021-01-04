@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,6 +7,25 @@
 
   <ItemGroup>
     <PackageReference Include="PdfPig" Version="0.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SchoolWeeksXml.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SchoolWeeksXml.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="SchoolWeeksXml.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SchoolWeeksXml.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

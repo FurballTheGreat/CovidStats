@@ -1,0 +1,19 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="CovidStats" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+<#@ parameter type="System.Collections.Generic.List<HseSchoolsSummary>" name="Week" #>
+<Weeks>
+<#
+    for(var i = 0; i < Week.Count;i++) {
+    #>
+  <Week>
+    <Number><#= Week[i].ChildcareFacilityByWeek.Last().Week #></Number>
+  </Week>
+
+<#  }#>
+
+</Weeks>
