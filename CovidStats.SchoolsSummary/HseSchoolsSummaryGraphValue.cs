@@ -1,4 +1,4 @@
-﻿namespace CovidStats
+﻿namespace CovidStats.SchoolsSummary
 {
     public class HseSchoolsSummaryGraphValue
     {

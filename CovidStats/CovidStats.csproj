@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,10 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="SchoolWeeksXml.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SchoolWeeksXml.cs</LastGenOutput>
-    </None>
+    <ProjectReference Include="..\CovidStats.DailyEpidemiology\CovidStats.DailyEpidemiology.csproj" />
+    <ProjectReference Include="..\CovidStats.SchoolsSummary\CovidStats.SchoolsSummary.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +24,13 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SchoolWeeksXml.tt</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SchoolWeeksXml.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SchoolWeeksXml.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

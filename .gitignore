@@ -3,3 +3,9 @@
 ################################################################################
 
 /CovidStats/bin/Debug
+/CovidStats/obj
+/CovidStats.SchoolsSummary/bin/Debug
+/CovidStats.SchoolsSummary/obj
+/.vs/CovidStats
+/CovidStats/CovidStats.csproj.user
+/CovidStats.DailyEpidemiology

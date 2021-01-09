@@ -1,19 +1,65 @@
 ﻿<#@ template language="C#" #>
 <#@ assembly name="System.Core" #>
-
 <#@ import namespace="System.Linq" #>
-<#@ import namespace="CovidStats" #>
 <#@ import namespace="System.Collections.Generic" #>
-
-<#@ parameter type="System.Collections.Generic.List<HseSchoolsSummary>" name="Week" #>
+<#@ import namespace="CovidStats.SchoolsSummary" #>
+<#@ parameter type="System.Collections.Generic.List<CovidStats.SchoolsSummary.HseSchoolsSummary>" name="Weeks" #>
 <Weeks>
+<#    for(var i = 0;  i < Weeks.Count; i++) { #>
+    <Week>
+        <Number><#= Weeks[i].ChildcareFacilityByWeek.Last().Week #></Number>
 <#
-    for(var i = 0; i < Week.Count;i++) {
-    #>
-  <Week>
-    <Number><#= Week[i].ChildcareFacilityByWeek.Last().Week #></Number>
-  </Week>
-
-<#  }#>
-
+        foreach(var val in Weeks[i].Values) {
+            var elementName = "Overall"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "");
+#>
+        <<#= elementName+"Week" #>><#= val.WeekValue #></<#= elementName+"Week" #>>
+        <<#= elementName+"Cumulative" #>><#= val.CumulativeToDate #></<#= elementName+"Cumulative" #>>
+<#      } 
+        foreach(var val in Weeks[i].AllFacilityTypesResultsSummary) {
+            var elementName = "Overall"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
+#>
+        <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
+        <<#= elementName+"NoTested" #>><#= val.NoTested #></<#= elementName+"NoTested" #>>
+        <<#= elementName+"NoDetected" #>><#= val.NoDetected #></<#= elementName+"NoDetected" #>>
+        <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
+        <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
+<#      } 
+        foreach(var val in Weeks[i].Schools.Testing) {
+            var elementName = "SchoolsTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
+#>
+        <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
+        <<#= elementName+"NoTested" #>><#= val.NoTested #></<#= elementName+"NoTested" #>>
+        <<#= elementName+"NoDetected" #>><#= val.NoDetected #></<#= elementName+"NoDetected" #>>
+        <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
+        <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
+<#      } 
+        foreach(var val in Weeks[i].Schools.MassTesting) {
+            var elementName = "SchoolsMassTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
+#>
+        <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
+        <<#= elementName+"NoTested" #>><#= val.NoTested #></<#= elementName+"NoTested" #>>
+        <<#= elementName+"NoDetected" #>><#= val.NoDetected #></<#= elementName+"NoDetected" #>>
+        <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
+        <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
+<#      } 
+        foreach(var val in Weeks[i].Childcare.Testing) {
+            var elementName = "ChildcareTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
+#>
+        <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
+        <<#= elementName+"NoTested" #>><#= val.NoTested #></<#= elementName+"NoTested" #>>
+        <<#= elementName+"NoDetected" #>><#= val.NoDetected #></<#= elementName+"NoDetected" #>>
+        <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
+        <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
+<#      } 
+        foreach(var val in Weeks[i].Childcare.MassTesting) {
+            var elementName = "ChildcareMassTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
+#>
+        <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
+        <<#= elementName+"NoTested" #>><#= val.NoTested #></<#= elementName+"NoTested" #>>
+        <<#= elementName+"NoDetected" #>><#= val.NoDetected #></<#= elementName+"NoDetected" #>>
+        <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
+        <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
+<#      } #>
+    </Week>
+<#    }#>
 </Weeks>

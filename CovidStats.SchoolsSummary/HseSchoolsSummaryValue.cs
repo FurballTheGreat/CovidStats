@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace CovidStats
+namespace CovidStats.SchoolsSummary
 {
     [DataContract]
     public class HseSchoolsSummaryValue

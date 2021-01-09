@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 
-namespace CovidStats
+namespace CovidStats.SchoolsSummary
 {
     public class HseSchoolsSummaryWeekSource
     {
