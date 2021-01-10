@@ -10,3 +10,5 @@
 /CovidStats/CovidStats.csproj.user
 /CovidStats.DailyEpidemiology/obj
 /CovidStats.DailyEpidemiology/bin/Debug/netcoreapp3.1
+/CovidStats.WeeklyEpidemiology/bin/Debug/netcoreapp3.1
+/CovidStats.WeeklyEpidemiology/obj

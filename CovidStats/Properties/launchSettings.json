@@ -2,7 +2,7 @@
   "profiles": {
     "CovidStats": {
       "commandName": "Project",
-      "commandLineArgs": "dailycopyrename \"C:\\personal\\IrelandCovidData\\DailyEpidemiology\" \"C:\\personal\\Outputs\\DailyEpidemiology\""
+      "commandLineArgs": "parseweekly \"C:\\personal\\IrelandCovidData\\WeeklyEpidemiology\" \"C:\\personal\\Outputs\\WeeklyEpidemiology\""
     }
   }
 }
