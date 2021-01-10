@@ -8,3 +8,5 @@
 /CovidStats.SchoolsSummary/obj
 /.vs/CovidStats
 /CovidStats/CovidStats.csproj.user
+/CovidStats.DailyEpidemiology/obj
+/CovidStats.DailyEpidemiology/bin/Debug/netcoreapp3.1

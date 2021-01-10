@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="DailyEpidemiologyXml.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DailyEpidemiologyXml.tt</DependentUpon>
+    </Compile>
     <Compile Update="SchoolWeeksXml.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -27,6 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="DailyEpidemiologyXml.tt">
+      <LastGenOutput>DailyEpidemiologyXml.cs</LastGenOutput>
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+    </None>
     <None Update="SchoolWeeksXml.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>SchoolWeeksXml.cs</LastGenOutput>

@@ -1,0 +1,119 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="CovidStats.DailyEpidemiology" #>
+<#@ parameter type="System.Collections.Generic.List<CovidStats.DailyEpidemiology.HspcDailyEpidemiology>" name="Days" #>
+<Days>
+<#  
+    var allChoNames= Days.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    pList.AddRange(pItem.CHORates.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allChoNames.Sort();
+
+    var allCcaNames= Days.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.CCARates!=null)
+                        pList.AddRange(pItem.CCARates.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allCcaNames.Sort();
+
+    var allHospitalisedNames= Days.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Hospitalised!=null)
+                        pList.AddRange(pItem.Hospitalised.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allHospitalisedNames.Sort();
+
+    var allCountyNames= Days.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    pList.AddRange(pItem.CountyRates.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allCountyNames.Sort();
+    for(var i = Days.Min(pX=>pX.FromDate);  i < Days.Max(pX=>pX.FromDate); i= i.AddDays(1)) { 
+        var current = Days.FirstOrDefault(pX=>pX.FromDate == i);
+#>
+    <Day>
+        <SourceFileName><#= (current?.SourceFileName ?? "MISSING") #></SourceFileName>
+        <FromDate><#= i.ToShortDateString() #></FromDate>
+        <ToDate><#= (current!=null ? current.ToDate : i.AddDays(14)).ToShortDateString() #></ToDate>
+        <PreparedDate><#= (current!=null ? current.PreparedDate.ToShortDateString() : "") #></PreparedDate>
+        <TotalConfirmedCasesAbs><#= (current!=null ? current.TotalConfirmedCases.Absolute.ToString() : "") #></TotalConfirmedCasesAbs>
+        <TotalConfirmedCasesPcnt><#= (current!=null ? current.TotalConfirmedCases.Percent.ToString() : "") #></TotalConfirmedCasesPcnt>
+        <SexMaleFemaleRatio><#= (current!=null ? current.SexCharacteristics.MaleFemaleRatio.ToString() : "") #></SexMaleFemaleRatio>
+        <SexMaleAbs><#= (current!=null ? current.SexCharacteristics.Male.Absolute.ToString() : "") #></SexMaleAbs>
+        <SexMalePcnt><#= (current!=null ? current.SexCharacteristics.Male.Percent.ToString() : "") #></SexMalePcnt>
+        <SexFemaleAbs><#= (current!=null ? current.SexCharacteristics.Female.Absolute.ToString() : "") #></SexFemaleAbs>
+        <SexFemalePcnt><#= (current!=null ? current.SexCharacteristics.Female.Percent.ToString() : "") #></SexFemalePcnt>
+        <SexUnknownAbs><#= (current!=null ? current.SexCharacteristics.Unknown.Absolute.ToString() : "") #></SexUnknownAbs>
+        <SexUnknownPcnt><#= (current!=null ? current.SexCharacteristics.Unknown.Percent.ToString() : "") #></SexUnknownPcnt>
+        <AgeMedian><#= (current!=null ? current.AgeCharacteristics.MedianAge.ToString() : "") #></AgeMedian>
+        <AgeMean><#= (current!=null ? current.AgeCharacteristics.MeanAge.ToString() : "") #></AgeMean>
+        <Age0To4Abs><#= (current!=null ? current.AgeCharacteristics.Age0To4.Absolute.ToString() : "") #></Age0To4Abs>
+        <Age0To4Pcnt><#= (current!=null ? current.AgeCharacteristics.Age0To4.Percent.ToString() : "") #></Age0To4Pcnt>
+        <Age5To12Abs><#= (current!=null ? current.AgeCharacteristics.Age5To12.Absolute.ToString() : "") #></Age5To12Abs>
+        <Age5To12Pcnt><#= (current!=null ? current.AgeCharacteristics.Age5To12.Percent.ToString() : "") #></Age5To12Pcnt>
+        <Age13To18Abs><#= (current!=null ? current.AgeCharacteristics.Age13To18.Absolute.ToString() : "") #></Age13To18Abs>
+        <Age13To18Pcnt><#= (current!=null ? current.AgeCharacteristics.Age13To18.Percent.ToString() : "") #></Age13To18Pcnt>
+        <Age19To24Abs><#= (current!=null ? current.AgeCharacteristics.Age19To24.Absolute.ToString() : "") #></Age19To24Abs>
+        <Age19To24Pcnt><#= (current!=null ? current.AgeCharacteristics.Age19To24.Percent.ToString() : "") #></Age19To24Pcnt>
+        <Age25To34Abs><#= (current!=null ?  current.AgeCharacteristics.Age25To34.Absolute.ToString() : "") #></Age25To34Abs>
+        <Age25To34Pcnt><#= (current!=null ? current.AgeCharacteristics.Age25To34.Percent.ToString() : "")  #></Age25To34Pcnt>
+        <Age35To44Abs><#= (current!=null ?  current.AgeCharacteristics.Age35To44.Absolute.ToString() : "") #></Age35To44Abs>
+        <Age35To44Pcnt><#= (current!=null ? current.AgeCharacteristics.Age35To44.Percent.ToString() : "")  #></Age35To44Pcnt>
+        <Age45To54Abs><#= (current!=null ?  current.AgeCharacteristics.Age45To54.Absolute.ToString() : "") #></Age45To54Abs>
+        <Age45To54Pcnt><#= (current!=null ? current.AgeCharacteristics.Age45To54.Percent.ToString() : "")  #></Age45To54Pcnt>
+        <Age55To64Abs><#= (current!=null ?  current.AgeCharacteristics.Age55To64.Absolute.ToString() : "") #></Age55To64Abs>
+        <Age55To64Pcnt><#= (current!=null ? current.AgeCharacteristics.Age55To64.Percent.ToString() : "")  #></Age55To64Pcnt>
+        <Age65To74Abs><#= (current!=null ?  current.AgeCharacteristics.Age65To74.Absolute.ToString() : "") #></Age65To74Abs>
+        <Age65To74Pcnt><#= (current!=null ? current.AgeCharacteristics.Age65To74.Percent.ToString() : "")  #></Age65To74Pcnt>
+        <Age75To84Abs><#= (current!=null ?  current.AgeCharacteristics.Age75To84.Absolute.ToString() : "") #></Age75To84Abs>
+        <Age75To84Pcnt><#= (current!=null ? current.AgeCharacteristics.Age75To84.Percent.ToString() : "")  #></Age75To84Pcnt>
+        <Age85PlusAbs><#= (current!=null ? current.AgeCharacteristics.Age85Plus.Absolute.ToString() : "") #></Age85PlusAbs>
+        <Age85PlusPcnt><#= (current!=null ? current.AgeCharacteristics.Age85Plus.Percent.ToString() : "") #></Age85PlusPcnt>
+        <AgeUnknownAbs><#= (current!=null ? current.AgeCharacteristics.AgeUnknown.Absolute.ToString() : "") #></AgeUnknownAbs>
+        <AgeUnknownPcnt><#= (current!=null ? current.AgeCharacteristics.AgeUnknown.Percent.ToString() : "") #></AgeUnknownPcnt><#
+        foreach(var cho in allChoNames) {
+            var inc = current?.CHORates.FirstOrDefault(pX=>pX.Name==cho);
+#>
+        <<#= cho #>Abs><#= (inc!=null ? inc.ConfirmedCases.ToString() : "") #></<#= cho #>Abs>
+        <<#= cho #>Rate><#= (inc!=null ? inc.IncidencePer100k.ToString() : "") #></<#= cho #>Rate>
+<#
+        }
+
+        foreach(var county in allCountyNames) {
+            var inc = current?.CountyRates.FirstOrDefault(pX=>pX.Name==county);
+#>
+        <<#= county #>Abs><#= (inc!=null ? inc.ConfirmedCases.ToString() : "") #></<#= county #>Abs>
+        <<#= county #>Rate><#= (inc!=null ? inc.IncidencePer100k.ToString() : "") #></<#= county #>Rate>
+<#
+        }
+        foreach(var cca in allCcaNames) {
+            var inc = current?.CCARates?.FirstOrDefault(pX=>pX.Name==cca);
+#>
+        <<#= cca #>Abs><#= (inc!=null ? inc.ConfirmedCases.ToString() : "") #></<#= cca #>Abs>
+        <<#= cca #>Rate><#= (inc!=null ? inc.IncidencePer100k.ToString() : "") #></<#= cca #>Rate>
+<#
+        }
+        foreach(var hospital in allHospitalisedNames) {
+            var inc = current?.Hospitalised?.FirstOrDefault(pX=>pX.Name==hospital);
+#>
+        <Cases<#= hospital #>><#= (inc!=null ? inc.NumberOfCases.ToString() : "") #></Cases<#= hospital #>>
+        <CasesHospitalised<#= hospital #>><#= (inc!=null ? inc.CasesHospitalised.ToString() : "") #></CasesHospitalised<#= hospital #>>
+        <CasesHospitalisedPcnt<#= hospital #>><#= (inc!=null ? inc.CasesHospitalisedPercent.ToString() : "") #></CasesHospitalisedPcnt<#= hospital #>>
+        <CasesAdmittedToIcu<#= hospital #>><#= (inc!=null ? inc.CasesAdmittedToIcu.ToString() : "") #></CasesAdmittedToIcu<#= hospital #>>
+<#
+        }
+#>
+    </Day>
+<#    }#>
+</Days>
