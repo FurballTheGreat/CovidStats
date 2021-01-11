@@ -5,10 +5,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.VisualBasic.FileIO;
-using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.Export.PAGE;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
+using UglyToad.PdfPig.Graphics.Operations.TextShowing;
+using PdfDocument = UglyToad.PdfPig.PdfDocument;
 
 namespace CovidStats.DailyEpidemiology
 {
@@ -215,7 +219,25 @@ namespace CovidStats.DailyEpidemiology
                         {
                             var lines = rawText.Split("\r\n").SkipWhile(pX=>!pX.StartsWith("0-4 yrs")).TakeWhile(pX=>!pX.StartsWith("Total") && !pX.Contains("hospitalised"));
 
+                            //if (pSourceFileName == "COVID-19_14_day_epidemiology_report_20201115_website.pdf")
+                            //{
+                            //    var pdfDocument =
+                            //        new iText.Kernel.Pdf.PdfDocument(new PdfReader(new MemoryStream(pData)));
+                            //    var strategy = new LocationTextExtractionStrategy();
+                                
+                            //    for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+                            //    {
+                            //        var page2 = pdfDocument.GetPage(i);
+
+                            //        string text = PdfTextExtractor.GetTextFromPage(page2, strategy);
+                            //        Console.WriteLine("*****************************************");
+                            //        Console.WriteLine(text);
+                                    
+                            //    }
+                            //}
+
                             var hospitalised = new List<HspcHospitalised>();
+
                             foreach (var line in lines)
                             {
                                 try
@@ -433,6 +455,12 @@ namespace CovidStats.DailyEpidemiology
                                 {
                                     if (entries[i].Key == "Unknown" || i >= 20)
                                         continue;
+                                    if (entries[i].Key == "5-12 yrs" && lines[lineIndex].StartsWith("5-14 yrs"))
+                                    {
+                                        i += 2;
+                                        lineIndex+=2;
+                                        continue;
+                                    }
                                     throw new InvalidDataException(
                                         $"Expected line starting with '{entries[i].Key}' instead got: {lines[lineIndex]}");
                                 }

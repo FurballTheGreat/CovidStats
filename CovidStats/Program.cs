@@ -42,7 +42,7 @@ namespace CovidStats
             var first = true;
             foreach (XmlNode child in firstNode.ChildNodes)
             {
-                if (first) first = false; else sw.Write(", ");
+                if (first) first = false; else sw.Write(",");
                 sw.Write(child.LocalName);
             }
 
@@ -53,7 +53,7 @@ namespace CovidStats
                 first = true;
                 foreach (XmlNode child in dayNode.ChildNodes)
                 {
-                    if (first) first = false; else sw.Write(", ");
+                    if (first) first = false; else sw.Write(",");
                     sw.Write(child.InnerText);
                 }
 
