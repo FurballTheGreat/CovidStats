@@ -12,3 +12,7 @@
 /CovidStats.DailyEpidemiology/bin/Debug/netcoreapp3.1
 /CovidStats.WeeklyEpidemiology/bin/Debug/netcoreapp3.1
 /CovidStats.WeeklyEpidemiology/obj
+/CovidStats/bin/Release/net5.0
+/CovidStats.DailyEpidemiology/bin/Release/netcoreapp3.1
+/CovidStats.SchoolsSummary/bin/Release/net5.0/ref
+/CovidStats.WeeklyEpidemiology/bin/Release/netcoreapp3.1

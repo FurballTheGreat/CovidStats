@@ -8,6 +8,7 @@ using CovidStats.DailyEpidemiology;
 using CovidStats.SchoolsSummary;
 using CovidStats.WeeklyEpidemiology;
 using Microsoft.VisualBasic;
+using UglyToad.PdfPig.Graphics.Operations.TextState;
 
 namespace CovidStats
 {
@@ -18,7 +19,7 @@ namespace CovidStats
             var options = new Dictionary<string, Action>
             {
                 {"parseschools", () => ParseSchoolsMassTestingReports(args[1], args[2])},
-                {"parsedaily", () => ParseDailyReports(args[1], args[2])},
+                {"parsedaily", () => ParseDailyReports(args[1], args[2], args[3])},
                 {"parseweekly", () => ParseWeeklyReports(args[1], args[2])}
             };
             var command = args[0].ToLowerInvariant();
@@ -63,11 +64,25 @@ namespace CovidStats
             return sw.ToString();
         }
 
-        private static void ParseDailyReports(string pInputDir, string pOutputDir)
+        private static void ParseDailyReports(string pInputDir, string pOutputDir, string pOverridesDir)
         {
+            var serial = new DataContractSerializer(typeof(HspcDailyEpidemiology));
             var sources = new List<HspcDailyEpidemiology>();
             foreach (var file in Directory.GetFiles(pInputDir))
-                sources.Add(HspcDailyEpidemiology.Load(File.ReadAllBytes(file), Path.GetFileName(file)));
+            {
+                Console.WriteLine($"Processing {file}");
+                sources.Add(HspcDailyEpidemiology.Load(File.ReadAllBytes(file), Path.GetFileName(file),
+                    pPreparedDate =>
+                    {
+                        var filename = $"{pOverridesDir}{Path.DirectorySeparatorChar}{pPreparedDate:yyyyMMdd}.xml";
+                        if (!File.Exists(filename))
+                            return null;
+
+                        using var strm = File.OpenRead(filename);
+                        return serial.ReadObject(strm) as HspcDailyEpidemiology;
+                    }));
+            }
+
             sources.Sort((pLeft, pRight)=>pLeft.FromDate.CompareTo(pRight.FromDate));
 
             var schoolsTemplate = new DailyEpidemiologyXml()
@@ -76,12 +91,12 @@ namespace CovidStats
             };
             schoolsTemplate.Initialize();
             var transformText = schoolsTemplate.TransformText();
-            File.WriteAllText($"{pOutputDir}\\Days.xml", transformText);
-            File.WriteAllText($"{pOutputDir}\\Days.csv",  XmlToCsv(transformText));
-            var serial = new DataContractSerializer(typeof(HspcDailyEpidemiology));
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}Days.xml", transformText);
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}Days.csv",  XmlToCsv(transformText));
+            
             foreach (var week in sources)
             {
-                using var file = File.Create($"{pOutputDir}\\DailyWeekFrom-{week.FromDate:yyyyMMdd}.xml");
+                using var file = File.Create($"{pOutputDir}{Path.DirectorySeparatorChar}DailyWeekFrom-{week.FromDate:yyyyMMdd}.xml");
                 using var writer = XmlWriter.Create(file, new XmlWriterSettings { Indent = true });
                 serial.WriteObject(writer, week);
                 writer.Flush();
@@ -103,12 +118,12 @@ namespace CovidStats
             };
             schoolsTemplate.Initialize();
             var transformText = schoolsTemplate.TransformText();
-            File.WriteAllText($"{pOutputDir}\\WeeklyIncidence.xml", transformText);
-            File.WriteAllText($"{pOutputDir}\\WeeklyIncidence.csv", XmlToCsv(transformText));
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}WeeklyIncidence.xml", transformText);
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}WeeklyIncidence.csv", XmlToCsv(transformText));
             var serial = new DataContractSerializer(typeof(HpscWeeklyEpidemiology));
             foreach (var week in sources)
             {
-                using var file = File.Create($"{pOutputDir}\\WeeklyPrepared-{week.FromDate:yyyyMMdd}.xml");
+                using var file = File.Create($"{pOutputDir}{Path.DirectorySeparatorChar}WeeklyPrepared-{week.FromDate:yyyyMMdd}.xml");
                 using var writer = XmlWriter.Create(file, new XmlWriterSettings { Indent = true });
                 serial.WriteObject(writer, week);
                 writer.Flush();
@@ -128,11 +143,11 @@ namespace CovidStats
             };
             schoolsTemplate.Initialize();
             var transformText = schoolsTemplate.TransformText();
-            File.WriteAllText($"{pOutputDir}\\Weeks.xml", transformText);
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}Weeks.xml", transformText);
             var serial = new DataContractSerializer(typeof(HseSchoolsSummary));
             foreach (var week in sources)
             {
-                using var file = File.Create($"{pOutputDir}\\Week{week.Week}.xml");
+                using var file = File.Create($"{pOutputDir}{Path.DirectorySeparatorChar}Week{week.Week}.xml");
                 using var writer = XmlWriter.Create(file, new XmlWriterSettings {Indent = true});
                 serial.WriteObject(writer, week);
                 writer.Flush();

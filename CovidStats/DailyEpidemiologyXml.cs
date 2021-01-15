@@ -35,7 +35,8 @@ namespace CovidStats
     var allChoNames= Days.Aggregate(new List<string>(),
                 (pList, pItem) =>
                 {
-                    pList.AddRange(pItem.CHORates.Select(pX => pX.Name));
+                    if(pItem.CHORates!=null)
+                        pList.AddRange(pItem.CHORates.Select(pX => pX.Name));
                     return pList;
                 }).Distinct().ToList();
     allChoNames.Sort();
@@ -61,7 +62,8 @@ namespace CovidStats
     var allCountyNames= Days.Aggregate(new List<string>(),
                 (pList, pItem) =>
                 {
-                    pList.AddRange(pItem.CountyRates.Select(pX => pX.Name));
+                    if(pItem.CountyRates!=null)
+                        pList.AddRange(pItem.CountyRates.Select(pX => pX.Name));
                     return pList;
                 }).Distinct().ToList();
     allCountyNames.Sort();
@@ -73,386 +75,386 @@ namespace CovidStats
             #line hidden
             this.Write("    <Day>\r\n        <SourceFileName>");
             
-            #line 46 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 48 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current?.SourceFileName ?? "MISSING")));
             
             #line default
             #line hidden
             this.Write("</SourceFileName>\r\n        <FromDate>");
             
-            #line 47 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 49 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(i.ToShortDateString()));
             
             #line default
             #line hidden
             this.Write("</FromDate>\r\n        <ToDate>");
             
-            #line 48 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 50 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.ToDate : i.AddDays(14)).ToShortDateString()));
             
             #line default
             #line hidden
             this.Write("</ToDate>\r\n        <PreparedDate>");
             
-            #line 49 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 51 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.PreparedDate.ToShortDateString() : "")));
             
             #line default
             #line hidden
             this.Write("</PreparedDate>\r\n        <TotalConfirmedCasesAbs>");
             
-            #line 50 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 52 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.TotalConfirmedCases.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</TotalConfirmedCasesAbs>\r\n        <TotalConfirmedCasesPcnt>");
             
-            #line 51 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 53 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.TotalConfirmedCases.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</TotalConfirmedCasesPcnt>\r\n        <SexMaleFemaleRatio>");
             
-            #line 52 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 54 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.SexCharacteristics.MaleFemaleRatio.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</SexMaleFemaleRatio>\r\n        <SexMaleAbs>");
             
-            #line 53 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 55 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.SexCharacteristics.Male.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</SexMaleAbs>\r\n        <SexMalePcnt>");
             
-            #line 54 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 56 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.SexCharacteristics.Male.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</SexMalePcnt>\r\n        <SexFemaleAbs>");
             
-            #line 55 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 57 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.SexCharacteristics.Female.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</SexFemaleAbs>\r\n        <SexFemalePcnt>");
             
-            #line 56 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 58 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.SexCharacteristics.Female.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</SexFemalePcnt>\r\n        <SexUnknownAbs>");
             
-            #line 57 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 59 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.SexCharacteristics.Unknown.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</SexUnknownAbs>\r\n        <SexUnknownPcnt>");
             
-            #line 58 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 60 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.SexCharacteristics.Unknown.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</SexUnknownPcnt>\r\n        <AgeMedian>");
             
-            #line 59 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 61 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.MedianAge.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</AgeMedian>\r\n        <AgeMean>");
             
-            #line 60 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 62 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.MeanAge.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</AgeMean>\r\n        <Age0To4Abs>");
             
-            #line 61 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 63 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age0To4.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age0To4Abs>\r\n        <Age0To4Pcnt>");
             
-            #line 62 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 64 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age0To4.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age0To4Pcnt>\r\n        <Age5To12Abs>");
             
-            #line 63 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 65 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age5To12.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age5To12Abs>\r\n        <Age5To12Pcnt>");
             
-            #line 64 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 66 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age5To12.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age5To12Pcnt>\r\n        <Age13To18Abs>");
             
-            #line 65 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 67 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age13To18.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age13To18Abs>\r\n        <Age13To18Pcnt>");
             
-            #line 66 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 68 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age13To18.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age13To18Pcnt>\r\n        <Age19To24Abs>");
             
-            #line 67 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 69 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age19To24.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age19To24Abs>\r\n        <Age19To24Pcnt>");
             
-            #line 68 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 70 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age19To24.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age19To24Pcnt>\r\n        <Age25To34Abs>");
             
-            #line 69 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 71 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ?  current.AgeCharacteristics.Age25To34.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age25To34Abs>\r\n        <Age25To34Pcnt>");
             
-            #line 70 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 72 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age25To34.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age25To34Pcnt>\r\n        <Age35To44Abs>");
             
-            #line 71 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 73 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ?  current.AgeCharacteristics.Age35To44.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age35To44Abs>\r\n        <Age35To44Pcnt>");
             
-            #line 72 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 74 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age35To44.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age35To44Pcnt>\r\n        <Age45To54Abs>");
             
-            #line 73 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 75 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ?  current.AgeCharacteristics.Age45To54.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age45To54Abs>\r\n        <Age45To54Pcnt>");
             
-            #line 74 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 76 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age45To54.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age45To54Pcnt>\r\n        <Age55To64Abs>");
             
-            #line 75 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 77 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ?  current.AgeCharacteristics.Age55To64.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age55To64Abs>\r\n        <Age55To64Pcnt>");
             
-            #line 76 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 78 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age55To64.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age55To64Pcnt>\r\n        <Age65To74Abs>");
             
-            #line 77 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 79 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ?  current.AgeCharacteristics.Age65To74.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age65To74Abs>\r\n        <Age65To74Pcnt>");
             
-            #line 78 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 80 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age65To74.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age65To74Pcnt>\r\n        <Age75To84Abs>");
             
-            #line 79 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 81 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ?  current.AgeCharacteristics.Age75To84.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age75To84Abs>\r\n        <Age75To84Pcnt>");
             
-            #line 80 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 82 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age75To84.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age75To84Pcnt>\r\n        <Age85PlusAbs>");
             
-            #line 81 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 83 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age85Plus.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age85PlusAbs>\r\n        <Age85PlusPcnt>");
             
-            #line 82 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 84 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.Age85Plus.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Age85PlusPcnt>\r\n        <AgeUnknownAbs>");
             
-            #line 83 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 85 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.AgeUnknown.Absolute.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</AgeUnknownAbs>\r\n        <AgeUnknownPcnt>");
             
-            #line 84 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 86 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.AgeCharacteristics.AgeUnknown.Percent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</AgeUnknownPcnt>");
             
-            #line 84 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 86 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
 
         foreach(var cho in allChoNames) {
-            var inc = current?.CHORates.FirstOrDefault(pX=>pX.Name==cho);
+            var inc = current?.CHORates?.FirstOrDefault(pX=>pX.Name==cho);
 
             
             #line default
             #line hidden
             this.Write("        <");
             
-            #line 88 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 90 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cho));
             
             #line default
             #line hidden
             this.Write("Abs>");
             
-            #line 88 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 90 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.ConfirmedCases.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 88 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 90 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cho));
             
             #line default
             #line hidden
             this.Write("Abs>\r\n        <");
             
-            #line 89 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 91 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cho));
             
             #line default
             #line hidden
             this.Write("Rate>");
             
-            #line 89 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 91 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.IncidencePer100k.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 89 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 91 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cho));
             
             #line default
             #line hidden
             this.Write("Rate>\r\n");
             
-            #line 90 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 92 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
 
         }
 
         foreach(var county in allCountyNames) {
-            var inc = current?.CountyRates.FirstOrDefault(pX=>pX.Name==county);
+            var inc = current?.CountyRates?.FirstOrDefault(pX=>pX.Name==county);
 
             
             #line default
             #line hidden
             this.Write("        <");
             
-            #line 96 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 98 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(county));
             
             #line default
             #line hidden
             this.Write("Abs>");
             
-            #line 96 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 98 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.ConfirmedCases.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 96 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 98 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(county));
             
             #line default
             #line hidden
             this.Write("Abs>\r\n        <");
             
-            #line 97 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 99 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(county));
             
             #line default
             #line hidden
             this.Write("Rate>");
             
-            #line 97 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 99 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.IncidencePer100k.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 97 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 99 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(county));
             
             #line default
             #line hidden
             this.Write("Rate>\r\n");
             
-            #line 98 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 100 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
 
         }
         foreach(var cca in allCcaNames) {
@@ -463,49 +465,49 @@ namespace CovidStats
             #line hidden
             this.Write("        <");
             
-            #line 103 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 105 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cca));
             
             #line default
             #line hidden
             this.Write("Abs>");
             
-            #line 103 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 105 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.ConfirmedCases.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 103 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 105 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cca));
             
             #line default
             #line hidden
             this.Write("Abs>\r\n        <");
             
-            #line 104 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 106 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cca));
             
             #line default
             #line hidden
             this.Write("Rate>");
             
-            #line 104 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 106 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.IncidencePer100k.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 104 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 106 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cca));
             
             #line default
             #line hidden
             this.Write("Rate>\r\n");
             
-            #line 105 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 107 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
 
         }
         foreach(var hospital in allHospitalisedNames) {
@@ -516,91 +518,91 @@ namespace CovidStats
             #line hidden
             this.Write("        <Cases");
             
-            #line 110 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 112 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 110 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 112 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.NumberOfCases.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</Cases");
             
-            #line 110 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 112 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">\r\n        <CasesHospitalised");
             
-            #line 111 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 113 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 111 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 113 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.CasesHospitalised.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</CasesHospitalised");
             
-            #line 111 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 113 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">\r\n        <CasesHospitalisedPcnt");
             
-            #line 112 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 114 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 112 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 114 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.CasesHospitalisedPercent.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</CasesHospitalisedPcnt");
             
-            #line 112 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 114 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">\r\n        <CasesAdmittedToIcu");
             
-            #line 113 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 115 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 113 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 115 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture((inc!=null ? inc.CasesAdmittedToIcu.ToString() : "")));
             
             #line default
             #line hidden
             this.Write("</CasesAdmittedToIcu");
             
-            #line 113 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 115 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(hospital));
             
             #line default
             #line hidden
             this.Write(">\r\n");
             
-            #line 114 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 116 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
 
         }
 
@@ -609,7 +611,7 @@ namespace CovidStats
             #line hidden
             this.Write("    </Day>\r\n");
             
-            #line 118 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            #line 120 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
     }
             
             #line default

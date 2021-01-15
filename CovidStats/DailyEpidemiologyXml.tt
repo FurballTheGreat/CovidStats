@@ -9,7 +9,8 @@
     var allChoNames= Days.Aggregate(new List<string>(),
                 (pList, pItem) =>
                 {
-                    pList.AddRange(pItem.CHORates.Select(pX => pX.Name));
+                    if(pItem.CHORates!=null)
+                        pList.AddRange(pItem.CHORates.Select(pX => pX.Name));
                     return pList;
                 }).Distinct().ToList();
     allChoNames.Sort();
@@ -35,7 +36,8 @@
     var allCountyNames= Days.Aggregate(new List<string>(),
                 (pList, pItem) =>
                 {
-                    pList.AddRange(pItem.CountyRates.Select(pX => pX.Name));
+                    if(pItem.CountyRates!=null)
+                        pList.AddRange(pItem.CountyRates.Select(pX => pX.Name));
                     return pList;
                 }).Distinct().ToList();
     allCountyNames.Sort();
@@ -45,7 +47,7 @@
     <Day>
         <SourceFileName><#= (current?.SourceFileName ?? "MISSING") #></SourceFileName>
         <FromDate><#= i.ToShortDateString() #></FromDate>
-        <ToDate><#= (current!=null ? current.ToDate : i.AddDays(14)).ToShortDateString() #></ToDate>
+        <ToDate><#= (current!=null ? current.ToDate : i.AddDays(13)).ToShortDateString() #></ToDate>
         <PreparedDate><#= (current!=null ? current.PreparedDate.ToShortDateString() : "") #></PreparedDate>
         <TotalConfirmedCasesAbs><#= (current!=null ? current.TotalConfirmedCases.Absolute.ToString() : "") #></TotalConfirmedCasesAbs>
         <TotalConfirmedCasesPcnt><#= (current!=null ? current.TotalConfirmedCases.Percent.ToString() : "") #></TotalConfirmedCasesPcnt>
@@ -83,7 +85,7 @@
         <AgeUnknownAbs><#= (current!=null ? current.AgeCharacteristics.AgeUnknown.Absolute.ToString() : "") #></AgeUnknownAbs>
         <AgeUnknownPcnt><#= (current!=null ? current.AgeCharacteristics.AgeUnknown.Percent.ToString() : "") #></AgeUnknownPcnt><#
         foreach(var cho in allChoNames) {
-            var inc = current?.CHORates.FirstOrDefault(pX=>pX.Name==cho);
+            var inc = current?.CHORates?.FirstOrDefault(pX=>pX.Name==cho);
 #>
         <<#= cho #>Abs><#= (inc!=null ? inc.ConfirmedCases.ToString() : "") #></<#= cho #>Abs>
         <<#= cho #>Rate><#= (inc!=null ? inc.IncidencePer100k.ToString() : "") #></<#= cho #>Rate>
@@ -91,7 +93,7 @@
         }
 
         foreach(var county in allCountyNames) {
-            var inc = current?.CountyRates.FirstOrDefault(pX=>pX.Name==county);
+            var inc = current?.CountyRates?.FirstOrDefault(pX=>pX.Name==county);
 #>
         <<#= county #>Abs><#= (inc!=null ? inc.ConfirmedCases.ToString() : "") #></<#= county #>Abs>
         <<#= county #>Rate><#= (inc!=null ? inc.IncidencePer100k.ToString() : "") #></<#= county #>Rate>

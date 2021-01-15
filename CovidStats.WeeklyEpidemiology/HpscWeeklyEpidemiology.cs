@@ -77,18 +77,22 @@ namespace CovidStats.WeeklyEpidemiology
                         var rows = new List<HpscWeeklyHeatmapRow>();
                         var lines =text.Split("\n").SkipWhile(pX => !heatmapStartRegex.IsMatch(pX)).TakeWhile(pX => char.IsDigit(pX[0])).ToArray();
                         var valNames = lines.First().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var line in lines.Skip(1))
+                        var offset = 0;
+                        foreach (var rawLine in lines.Skip(1))
                         {
+                            var line= rawLine.StartsWith("2021 ")? rawLine.Substring(5) : rawLine;
                             var splits = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                             var entries = new List<HpscWeeklyHeatmapEntry>();
                             for (var j = 0; j < valNames.Length; j++)
                                 entries.Add(new HpscWeeklyHeatmapEntry { Name = valNames[j], Value = decimal.Parse(splits[j + 1]), Index = j});
                             rows.Add(new HpscWeeklyHeatmapRow
                             {
-                                Week = Int32.Parse(splits[0]),
+                                Week = Int32.Parse(splits[0])+offset,
                                 Entries = entries.ToArray()
                                 
                             });
+                            if (Int32.Parse(splits[0]) == 53)
+                                offset = 53;
                         }
 
                         result.AgeHeatmap = rows.ToArray();
