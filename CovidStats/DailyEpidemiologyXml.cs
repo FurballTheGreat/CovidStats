@@ -90,7 +90,7 @@ namespace CovidStats
             this.Write("</FromDate>\r\n        <ToDate>");
             
             #line 50 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.ToDate : i.AddDays(14)).ToShortDateString()));
+            this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.ToDate : i.AddDays(13)).ToShortDateString()));
             
             #line default
             #line hidden

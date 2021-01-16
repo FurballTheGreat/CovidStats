@@ -7,6 +7,7 @@ using System.Xml;
 using CovidStats.DailyEpidemiology;
 using CovidStats.SchoolsSummary;
 using CovidStats.WeeklyEpidemiology;
+using iText.Kernel.Pdf;
 using Microsoft.VisualBasic;
 using UglyToad.PdfPig.Graphics.Operations.TextState;
 

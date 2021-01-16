@@ -105,7 +105,14 @@ namespace CovidStats.DailyEpidemiology
                     new Regex(@"Number of confirmed COVID-19 cases by CHO notified in Ireland from");
                 var ccaIncidenceRegex =
                     new Regex(@"Number and incidence of confirmed COVID-19 cases by Dublin Local Health Offices");
-                var hospitalRegex = new Regex(@"by age group, hospitalisation and ICU admission");
+                var hospitalRegex =  new Regex(@"by age group, hospitalisation and ICU admission");
+                var hospitalRegex4 = new Regex(@"by age group, hospitalisatioin and ICU admission");
+                var hospitalRegex5 = new Regex(@"by age group, hospitalisation, and ICU admission");
+                var hospitalRegex8 = new Regex(@"by age group, hospitalistion and ICU admission");
+                var hospitalRegex6 = new Regex(@"by age group, hospitalisation,");
+                var hospitalRegex7 = new Regex(@"by age group and hospitalisation");
+                var hospitalRegex2 = new Regex(@"by age group and hospital and ICU admission");
+                var hospitalRegex3 = new Regex(@"by age group and hospital, ICU. and vital status");
                 var hospitalNewRegex = new Regex(@"by age-group, hospitalisation, ICU admission. and vital status");
                 Console.WriteLine("Opening PDF");
                 using (var pdf = PdfDocument.Open(pData))
@@ -282,7 +289,7 @@ namespace CovidStats.DailyEpidemiology
                         if (!gotHospital)
                         {
                            
-                            if (hospitalRegex.IsMatch(rawText) || hospitalNewRegex.IsMatch(rawText))
+                            if (hospitalRegex.IsMatch(rawText) || hospitalNewRegex.IsMatch(rawText) || hospitalRegex2.IsMatch(rawText) || hospitalRegex3.IsMatch(rawText) || hospitalRegex4.IsMatch(rawText) || hospitalRegex5.IsMatch(rawText) || hospitalRegex6.IsMatch(rawText) || hospitalRegex7.IsMatch(rawText) || hospitalRegex8.IsMatch(rawText))
                             {
                                 Console.WriteLine("hospital");
                                 var lines = rawText.Split(newLine).SkipWhile(pX => !pX.StartsWith("0-4 yrs"))
@@ -400,7 +407,8 @@ namespace CovidStats.DailyEpidemiology
                                     }
                                 }
 
-                                result.Hospitalised = hospitalised.ToArray();
+                                if(hospitalised.Count>0 )
+                                    result.Hospitalised = hospitalised.ToArray();
 
                                 gotHospital = true;
                             }
@@ -412,11 +420,9 @@ namespace CovidStats.DailyEpidemiology
                             var matches = characteristicsRegex.Matches(rawText);
                             if (matches.Count > 0)
                             {
-                                Console.WriteLine("characteristics");
-                                Console.WriteLine("characteristicsy");
-                                foreach (Group grp in matches.First().Groups) 
-                                    Console.WriteLine(grp.Name);
-                                Console.WriteLine("characteristicsz");
+                              
+                               
+                           
                                 result.FromDate = DateTime.Parse(matches.First().Groups["fromDate"].Value);
                                 result.ToDate = DateTime.Parse(matches.First().Groups["toDate"].Value);
                                 var lines = rawText.Split(newLine)
@@ -586,41 +592,38 @@ namespace CovidStats.DailyEpidemiology
                                 var lineIndex = 0;
                                 for (var i = 0; i < entries.Count; i++)
                                 {
-                                    Console.WriteLine("a");
+                             
                                     if (lineIndex >= lines.Length)
                                         throw new InvalidDataException("Cannot decode characteristics, failed at " +
                                                                        entries[i].Key);
 
-                                    Console.WriteLine("b");
                                     if (new Regex(@"^\d\d ").IsMatch(lines[lineIndex]))
                                         lines[lineIndex] = lines[lineIndex].Substring(3);
 
-                                    Console.WriteLine("c");
                                     if (!lines[lineIndex].StartsWith(entries[i].Key))
                                     {
-                                        Console.WriteLine("d");
+                   
                                         if (entries[i].Key == "Unknown" || i >= 20)
                                             continue;
-                                        Console.WriteLine("e");
+                        
                                         if (entries[i].Key == "5-12 yrs" && lines[lineIndex].StartsWith("5-14 yrs"))
                                         {
                                             i += 2;
                                             lineIndex += 2;
-                                            Console.WriteLine("f");
+                                     
                                             continue;
                                         }
 
                                         throw new InvalidDataException(
                                             $"Expected line starting with '{entries[i].Key}' instead got: {lines[lineIndex]}");
                                     }
-                                    Console.WriteLine("g");
+                             
                                     
                                     splits = lines[lineIndex].Substring(entries[i].Key.Length)
                                         .Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                                    Console.WriteLine($"{entries[i].Key}");
-                                    Console.WriteLine($"'{lines[lineIndex]}'");
+
                                     entries[i].Value();
-                                    Console.WriteLine("h");
+                  
                                     lineIndex++;
                                 }
 
@@ -634,7 +637,16 @@ namespace CovidStats.DailyEpidemiology
                 }
 
                 if (result.FromDate.Year < 200)
-                    result.FromDate = result.ToDate.AddDays(-13);
+                {
+                    if (result.PreparedDate.Equals(DateTime.Parse("23/10/2020")))
+                    {
+                        result.FromDate = DateTime.Parse("");
+                        result.ToDate = DateTime.Parse("23/10/2020");
+                    }else
+                        result.FromDate = result.ToDate.AddDays(-13);
+
+                }
+
                 if(result.ToDate.Year<2000)
                     result.ToDate = result.FromDate.AddDays(13);
                 return result;
