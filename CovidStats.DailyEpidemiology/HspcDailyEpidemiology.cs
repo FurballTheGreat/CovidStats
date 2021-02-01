@@ -14,6 +14,7 @@ using PdfDocument = UglyToad.PdfPig.PdfDocument;
 
 namespace CovidStats.DailyEpidemiology
 {
+
     public class HspcDailyEpidemiology
     {
         private static readonly Dictionary<string, decimal> Counties = new Dictionary<string, decimal>
@@ -79,6 +80,102 @@ namespace CovidStats.DailyEpidemiology
         public HspcIncidence[] CCARates { get; set; } 
         public HspcHospitalised[] Hospitalised { get; set; }
 
+
+        private static void ApplyBest(string[] pLines, List<KeyValuePair<string, Action<string[]>>[]> pOptions)
+        {
+            var maxLineIndex = 0;
+            KeyValuePair<string, Action<string[]>>[] actions = null;
+            var lineIndex = 0;
+            var gotFullMatch = false;
+
+            for (var i = 0; i < pLines.Length; i++)
+            {
+                if (new Regex(@"^\d\d ").IsMatch(pLines[i]))
+                    pLines[i] = pLines[i].Substring(3);
+            }
+            foreach (var entries in pOptions)
+            {
+                int i = 0;
+                for (i = 0; i < entries.Length; i++)
+                {
+                    if (!pLines[lineIndex].StartsWith(entries[i].Key))
+                    {
+
+                        if (entries[i].Key.StartsWith("Unknown"))
+                        {
+                           
+                            continue;
+                        }
+
+                        if (pLines[lineIndex].StartsWith("Report prepared by Health Protection Surveillance Centre"))
+                            lineIndex++;
+
+                        break;
+                    }
+                    lineIndex++;
+                    if (i == entries.Length - 1 || lineIndex == pLines.Length -1 )
+                    {
+                        maxLineIndex = i;
+                        gotFullMatch = true;
+                        actions = entries;
+                        break;
+                    }
+                }
+
+                if (gotFullMatch) break;
+
+                if (lineIndex > maxLineIndex)
+                {
+                    maxLineIndex = i;
+                    actions = entries;
+                }
+
+                lineIndex = 0;
+            }
+
+            if (maxLineIndex <= pLines.Length && maxLineIndex < 20 && !gotFullMatch)
+            {
+                throw new InvalidDataException("Cannot decode characteristics ");
+            }
+
+            lineIndex = 0;
+            for (var i = 0; i < actions.Length; i++)
+            {
+
+                if (new Regex(@"^\d\d ").IsMatch(pLines[lineIndex]))
+                    pLines[lineIndex] = pLines[lineIndex].Substring(3);
+
+                if (!pLines[lineIndex].StartsWith(actions[i].Key))
+                {
+                    if (actions[i].Key.StartsWith("Unknown"))
+                    {
+                  
+                        continue;
+                    }
+
+
+                    if (pLines[lineIndex].StartsWith("Report prepared by Health Protection Surveillance Centre"))
+                    {
+                        lineIndex++;
+
+                    }
+
+                    if (lineIndex >= pLines.Length) break;
+                    if (!pLines[lineIndex].StartsWith(actions[i].Key))
+                        break;
+                }
+
+
+                var splits = pLines[lineIndex].Substring(actions[i].Key.Length)
+                    .Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+                actions[i].Value(splits);
+
+                lineIndex++;
+                if (lineIndex >= pLines.Length) break;
+            }
+        }
+
         public static HspcDailyEpidemiology Load(byte[] pData, string pSourceFileName, Func<DateTime,HspcDailyEpidemiology> pGetOverrides)
         {
             var newLine = (new StringBuilder().AppendLine()).ToString();
@@ -99,6 +196,9 @@ namespace CovidStats.DailyEpidemiology
                 var characteristicsRegex =
                     new Regex(
                         @"Table \d: Characteristics of confirmed COVID-19 cases notified in Ireland from (?<fromDate>\d+/\d+/\d+) up to midnight on (?<toDate>\d+/\d+/\d+)(?<content>.*)");
+                var characteristicsRegex2 =
+                    new Regex(
+                        @"Table \d: Age and sex of confirmed COVID-19 cases notified in Ireland from (?<fromDate>\d+/\d+/\d+) up to midnight on (?<toDate>\d+/\d+/\d+)(?<content>.*)");
                 var choIncidenceRegex =
                     new Regex(@"Number of confirmed COVID-19 cases by community healthcare organisation");
                 var choIncidenceRegex2 =
@@ -292,7 +392,15 @@ namespace CovidStats.DailyEpidemiology
                             if (hospitalRegex.IsMatch(rawText) || hospitalNewRegex.IsMatch(rawText) || hospitalRegex2.IsMatch(rawText) || hospitalRegex3.IsMatch(rawText) || hospitalRegex4.IsMatch(rawText) || hospitalRegex5.IsMatch(rawText) || hospitalRegex6.IsMatch(rawText) || hospitalRegex7.IsMatch(rawText) || hospitalRegex8.IsMatch(rawText))
                             {
                                 Console.WriteLine("hospital");
-                                var lines = rawText.Split(newLine).SkipWhile(pX => !pX.StartsWith("0-4 yrs"))
+                                IEnumerable<string> lines; 
+                                if (result.PreparedDate.Equals(DateTime.Parse("30/01/2021")))
+                                {
+                                    var templines = rawText.Split(newLine).SkipWhile(pX => !pX.StartsWith("0-4 yrs"));
+
+                                    lines = templines.Take(2).Union(templines.Skip(6).TakeWhile(pX => !pX.StartsWith("Total") && !pX.Contains("hospitalised")));
+                                        
+                                }
+                                else lines = rawText.Split(newLine).SkipWhile(pX => !pX.StartsWith("0-4 yrs"))
                                     .TakeWhile(pX => !pX.StartsWith("Total") && !pX.Contains("hospitalised"));
 
 
@@ -392,9 +500,9 @@ namespace CovidStats.DailyEpidemiology
                                                 hospitalised.Add(new HspcHospitalised
                                                 {
                                                     Name = splits[0].Replace("-", "To").Replace("+", "Plus"),
-                                                    NumberOfCases = Int32.Parse(splits[1].Replace(",", "")),
-                                                    CasesAdmittedToIcu = Int32.Parse(splits[2].Replace(",", "")),
-                                                    CasesAdmittedToIcuPercent = Decimal.Parse(splits[3].Replace(",", ""))
+                                                    NumberOfCases = Int32.Parse(splits[splits[1] == "yrs" ? 2 : 1].Replace(",", "")),
+                                                    CasesHospitalised = Int32.Parse(splits[splits[1] == "yrs" ? 3 :2].Replace(",", "")),
+                                                    CasesHospitalisedPercent = Decimal.Parse(splits[splits[1] == "yrs" ? 4 : 3].Replace(",", ""))
                                                 });
                                                 ;
                                             }
@@ -418,6 +526,7 @@ namespace CovidStats.DailyEpidemiology
                         {
                           
                             var matches = characteristicsRegex.Matches(rawText);
+                            if (matches.Count == 0) matches = characteristicsRegex2.Matches(rawText);
                             if (matches.Count > 0)
                             {
                               
@@ -427,205 +536,193 @@ namespace CovidStats.DailyEpidemiology
                                 result.ToDate = DateTime.Parse(matches.First().Groups["toDate"].Value);
                                 var lines = rawText.Split(newLine)
                                     .SkipWhile(pX => !pX.StartsWith("Total number of confirmed cases")).ToArray();
-                                var splits = new string[0];
+                               
 
-
-                                var entries = !lines[1].StartsWith("Sex")
-                                    ? new List<KeyValuePair<string, Action>>
-                                    {
-                                        new KeyValuePair<string, Action>("Total number of confirmed cases",
-                                            () => result.TotalConfirmedCases = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("0-4 yrs",
-                                            () => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("5-12 yrs",
-                                            () => result.AgeCharacteristics.Age5To12 = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("13-18 yrs",
-                                            () => result.AgeCharacteristics.Age13To18 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("19-24 yrs",
-                                            () => result.AgeCharacteristics.Age19To24 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("25-34 yrs",
-                                            () => result.AgeCharacteristics.Age25To34 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("35-44 yrs",
-                                            () => result.AgeCharacteristics.Age35To44 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("45-54 yrs",
-                                            () => result.AgeCharacteristics.Age45To54 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("55-64 yrs",
-                                            () => result.AgeCharacteristics.Age55To64 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("65-74 yrs",
-                                            () => result.AgeCharacteristics.Age65To74 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("75-84 yrs",
-                                            () => result.AgeCharacteristics.Age75To84 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("85+ yrs",
-                                            () => result.AgeCharacteristics.Age85Plus =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.AgeCharacteristics.AgeUnknown =
-                                                ParseAbsoluteAndPercent(splits)),
-
-                                        new KeyValuePair<string, Action>("Sex Male:Female ratio",
-                                            () => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(splits[0])),
-                                        new KeyValuePair<string, Action>("Male",
-                                            () => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Female",
-                                            () => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(splits)),
-
-                                        new KeyValuePair<string, Action>("Age Median age (years)",
-                                            () => result.AgeCharacteristics.MedianAge = Int32.Parse(splits[0])),
-                                        new KeyValuePair<string, Action>("Mean age (years)",
-                                            () => result.AgeCharacteristics.MeanAge = Int32.Parse(splits[0])),
-                                        new KeyValuePair<string, Action>("Age range (years)", () => { }),
-
-                                        new KeyValuePair<string, Action>("Yes",
-                                            () => result.UnderlyingConditionsCharacteristics.Yes =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("No",
-                                            () => result.UnderlyingConditionsCharacteristics.No =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.UnderlyingConditionsCharacteristics.Unknown =
-                                                ParseAbsoluteAndPercent(splits)),
-
-                                        new KeyValuePair<string, Action>("Underlying clinical conditions", () => { }),
-
-                                        new KeyValuePair<string, Action>("Yes",
-                                            () => result.SymptomStatusAtTimeOfTestCharacteristics.Yes =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("No",
-                                            () => result.SymptomStatusAtTimeOfTestCharacteristics.No =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.SymptomStatusAtTimeOfTestCharacteristics.Unknown =
-                                                ParseAbsoluteAndPercent(splits)),
-
-                                    }
-                                    : new List<KeyValuePair<string, Action>>
-                                    {
-                                        new KeyValuePair<string, Action>("Total number of confirmed cases",
-                                            () => result.TotalConfirmedCases = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Sex Male:Female ratio",
-                                            () => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(splits[0])),
-                                        new KeyValuePair<string, Action>("Male",
-                                            () => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Female",
-                                            () => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(splits)),
-
-                                        new KeyValuePair<string, Action>("Age Median age (years)",
-                                            () => result.AgeCharacteristics.MedianAge = Int32.Parse(splits[0])),
-                                        new KeyValuePair<string, Action>("Mean age (years)",
-                                            () => result.AgeCharacteristics.MeanAge = Int32.Parse(splits[0])),
-                                        new KeyValuePair<string, Action>("Age range (years)", () => { }),
-                                        new KeyValuePair<string, Action>(
-                                            "Report prepared by Health Protection Surveillance Centre", () => { }),
-                                        new KeyValuePair<string, Action>("0-4 yrs",
-                                            () => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("5-12 yrs",
-                                            () => result.AgeCharacteristics.Age5To12 = ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("13-18 yrs",
-                                            () => result.AgeCharacteristics.Age13To18 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("19-24 yrs",
-                                            () => result.AgeCharacteristics.Age19To24 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("25-34 yrs",
-                                            () => result.AgeCharacteristics.Age25To34 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("35-44 yrs",
-                                            () => result.AgeCharacteristics.Age35To44 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("45-54 yrs",
-                                            () => result.AgeCharacteristics.Age45To54 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("55-64 yrs",
-                                            () => result.AgeCharacteristics.Age55To64 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("65-74 yrs",
-                                            () => result.AgeCharacteristics.Age65To74 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("75-84 yrs",
-                                            () => result.AgeCharacteristics.Age75To84 =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("85+ yrs",
-                                            () => result.AgeCharacteristics.Age85Plus =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.AgeCharacteristics.AgeUnknown =
-                                                ParseAbsoluteAndPercent(splits)),
-
-
-
-
-                                        new KeyValuePair<string, Action>("Yes",
-                                            () => result.UnderlyingConditionsCharacteristics.Yes =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("No",
-                                            () => result.UnderlyingConditionsCharacteristics.No =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.UnderlyingConditionsCharacteristics.Unknown =
-                                                ParseAbsoluteAndPercent(splits)),
-
-                                        new KeyValuePair<string, Action>("Underlying clinical conditions", () => { }),
-
-                                        new KeyValuePair<string, Action>("Yes",
-                                            () => result.SymptomStatusAtTimeOfTestCharacteristics.Yes =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("No",
-                                            () => result.SymptomStatusAtTimeOfTestCharacteristics.No =
-                                                ParseAbsoluteAndPercent(splits)),
-                                        new KeyValuePair<string, Action>("Unknown",
-                                            () => result.SymptomStatusAtTimeOfTestCharacteristics.Unknown =
-                                                ParseAbsoluteAndPercent(splits)),
-
-                                    };
-                                var lineIndex = 0;
-                                for (var i = 0; i < entries.Count; i++)
+                                ApplyBest(lines, new List<KeyValuePair<string, Action<string[]>>[]>
                                 {
-                             
-                                    if (lineIndex >= lines.Length)
-                                        throw new InvalidDataException("Cannot decode characteristics, failed at " +
-                                                                       entries[i].Key);
-
-                                    if (new Regex(@"^\d\d ").IsMatch(lines[lineIndex]))
-                                        lines[lineIndex] = lines[lineIndex].Substring(3);
-
-                                    if (!lines[lineIndex].StartsWith(entries[i].Key))
+                                    new[]{
+                                        new KeyValuePair<string, Action<string[]>>("Total number of confirmed cases", pSplits => result.TotalConfirmedCases = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("0-4 yrs", pSplits => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("5-12 yrs", pSplits => result.AgeCharacteristics.Age5To12 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("13-18 yrs", pSplits => result.AgeCharacteristics.Age13To18 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("19-24 yrs", pSplits => result.AgeCharacteristics.Age19To24 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("25-34 yrs", pSplits => result.AgeCharacteristics.Age25To34 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("35-44 yrs", pSplits => result.AgeCharacteristics.Age35To44 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("45-54 yrs", pSplits => result.AgeCharacteristics.Age45To54 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("55-64 yrs", pSplits => result.AgeCharacteristics.Age55To64 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("65-74 yrs", pSplits => result.AgeCharacteristics.Age65To74 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("75-84 yrs", pSplits => result.AgeCharacteristics.Age75To84 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("85+ yrs", pSplits => result.AgeCharacteristics.Age85Plus = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.AgeCharacteristics.AgeUnknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Sex Male:Female ratio", pSplits => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Male", pSplits => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Female", pSplits => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Age Median age (years)", pSplits => result.AgeCharacteristics.MedianAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Mean age (years)", pSplits => result.AgeCharacteristics.MeanAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Age range (years)", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.UnderlyingConditionsCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.UnderlyingConditionsCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.UnderlyingConditionsCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Underlying clinical conditions", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)), 
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                    },
+                                    new[]{
+                                        new KeyValuePair<string, Action<string[]>>("Total number of confirmed cases", pSplits => result.TotalConfirmedCases = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Sex Male:Female ratio", pSplits => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Male", pSplits => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Female", pSplits => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.UnderlyingConditionsCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.UnderlyingConditionsCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.UnderlyingConditionsCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Underlying clinical conditions", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Symptom", pSplits => { }), 
+                                        new KeyValuePair<string, Action<string[]>>("*Symptom", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("cases", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Report", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Age Median age (years)", pSplits => result.AgeCharacteristics.MedianAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Mean age (years)", pSplits => result.AgeCharacteristics.MeanAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Age range (years)", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("0-4 yrs", pSplits => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("5-12 yrs", pSplits => result.AgeCharacteristics.Age5To12 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("13-18 yrs", pSplits => result.AgeCharacteristics.Age13To18 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("19-24 yrs", pSplits => result.AgeCharacteristics.Age19To24 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("25-34 yrs", pSplits => result.AgeCharacteristics.Age25To34 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("35-44 yrs", pSplits => result.AgeCharacteristics.Age35To44 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("45-54 yrs", pSplits => result.AgeCharacteristics.Age45To54 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("55-64 yrs", pSplits => result.AgeCharacteristics.Age55To64 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("65-74 yrs", pSplits => result.AgeCharacteristics.Age65To74 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("75-84 yrs", pSplits => result.AgeCharacteristics.Age75To84 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("85+ yrs", pSplits => result.AgeCharacteristics.Age85Plus = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.AgeCharacteristics.AgeUnknown = ParseAbsoluteAndPercent(pSplits)),
+                                        
+                                       
+                                    },
+                                    new[]{
+                                        new KeyValuePair<string, Action<string[]>>("Total number of confirmed cases", pSplits => result.TotalConfirmedCases = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("0-4 yrs", pSplits => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("5-14 yrs", pSplits => result.AgeCharacteristics.Age5To14 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("15-24 yrs", pSplits => result.AgeCharacteristics.Age15To24 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("25-34 yrs", pSplits => result.AgeCharacteristics.Age25To34 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("35-44 yrs", pSplits => result.AgeCharacteristics.Age35To44 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("45-54 yrs", pSplits => result.AgeCharacteristics.Age45To54 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("55-64 yrs", pSplits => result.AgeCharacteristics.Age55To64 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("65-74 yrs", pSplits => result.AgeCharacteristics.Age65To74 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("75-84 yrs", pSplits => result.AgeCharacteristics.Age75To84 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("85+ yrs", pSplits => result.AgeCharacteristics.Age85Plus = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.AgeCharacteristics.AgeUnknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Sex Male:Female ratio", pSplits => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Male", pSplits => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Female", pSplits => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Age Median age (years)", pSplits => result.AgeCharacteristics.MedianAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Mean age (years)", pSplits => result.AgeCharacteristics.MeanAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Age range (years)", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.UnderlyingConditionsCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.UnderlyingConditionsCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.UnderlyingConditionsCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Underlying clinical conditions", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                    },
+                                    new []
                                     {
-                   
-                                        if (entries[i].Key == "Unknown" || i >= 20)
-                                            continue;
-                        
-                                        if (entries[i].Key == "5-12 yrs" && lines[lineIndex].StartsWith("5-14 yrs"))
-                                        {
-                                            i += 2;
-                                            lineIndex += 2;
-                                     
-                                            continue;
-                                        }
+                                        new KeyValuePair<string, Action<string[]>>("Total number of confirmed cases", pSplits => result.TotalConfirmedCases = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("0-4 yrs", pSplits => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("5-12 yrs", pSplits => result.AgeCharacteristics.Age5To12 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("13-18 yrs", pSplits => result.AgeCharacteristics.Age13To18 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("19-24 yrs", pSplits => result.AgeCharacteristics.Age19To24 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("25-34 yrs", pSplits => result.AgeCharacteristics.Age25To34 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("35-44 yrs", pSplits => result.AgeCharacteristics.Age35To44 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("45-54 yrs", pSplits => result.AgeCharacteristics.Age45To54 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("55-64 yrs", pSplits => result.AgeCharacteristics.Age55To64 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("65-74 yrs", pSplits => result.AgeCharacteristics.Age65To74 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("75-84 yrs", pSplits => result.AgeCharacteristics.Age75To84 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("85+ yrs", pSplits => result.AgeCharacteristics.Age85Plus = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.AgeCharacteristics.AgeUnknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Sex Male:Female ratio", pSplits => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Male", pSplits => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Female", pSplits => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.UnderlyingConditionsCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.UnderlyingConditionsCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.UnderlyingConditionsCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Underlying clinical conditions", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("aSymptom", pSplits => { }), new KeyValuePair<string, Action<string[]>>("*Symptom", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Age Median age (years)", pSplits => result.AgeCharacteristics.MedianAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Mean age (years)", pSplits => result.AgeCharacteristics.MeanAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Age range (years)", pSplits => { }),
+                                    },
+                                    new []
+                                    {
+                                        new KeyValuePair<string, Action<string[]>>("Total number of confirmed cases", pSplits => result.TotalConfirmedCases = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("0-4 yrs", pSplits => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("5-12 yrs", pSplits => result.AgeCharacteristics.Age5To12 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("13-18 yrs", pSplits => result.AgeCharacteristics.Age13To18 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("19-24 yrs", pSplits => result.AgeCharacteristics.Age19To24 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("25-34 yrs", pSplits => result.AgeCharacteristics.Age25To34 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("35-44 yrs", pSplits => result.AgeCharacteristics.Age35To44 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("45-54 yrs", pSplits => result.AgeCharacteristics.Age45To54 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("55-64 yrs", pSplits => result.AgeCharacteristics.Age55To64 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("65-74 yrs", pSplits => result.AgeCharacteristics.Age65To74 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("75-84 yrs", pSplits => result.AgeCharacteristics.Age75To84 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("85+ yrs", pSplits => result.AgeCharacteristics.Age85Plus = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.AgeCharacteristics.AgeUnknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Sex Male:Female ratio", pSplits => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Male", pSplits => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Female", pSplits => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Report", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Age Median age (years)", pSplits => result.AgeCharacteristics.MedianAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Mean age (years)", pSplits => result.AgeCharacteristics.MeanAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Age range (years)", pSplits => { }),
+                                    },
+                                    new []
+                                    {
+                                        new KeyValuePair<string, Action<string[]>>("Total number of confirmed cases", pSplits => result.TotalConfirmedCases = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Sex Male:Female ratio", pSplits => result.SexCharacteristics.MaleFemaleRatio = decimal.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Male", pSplits => result.SexCharacteristics.Male = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Female", pSplits => result.SexCharacteristics.Female = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SexCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Age Median age (years)", pSplits => result.AgeCharacteristics.MedianAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Mean age (years)", pSplits => result.AgeCharacteristics.MeanAge = Int32.Parse(pSplits[0])),
+                                        new KeyValuePair<string, Action<string[]>>("Age range (years)", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Report prepared by Health Protection Surveillance Centre", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("0-4 yrs", pSplits => result.AgeCharacteristics.Age0To4 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("5-12 yrs", pSplits => result.AgeCharacteristics.Age5To12 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("13-18 yrs", pSplits => result.AgeCharacteristics.Age13To18 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("19-24 yrs", pSplits => result.AgeCharacteristics.Age19To24 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("25-34 yrs", pSplits => result.AgeCharacteristics.Age25To34 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("35-44 yrs", pSplits => result.AgeCharacteristics.Age35To44 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("45-54 yrs", pSplits => result.AgeCharacteristics.Age45To54 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("55-64 yrs", pSplits => result.AgeCharacteristics.Age55To64 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("65-74 yrs", pSplits => result.AgeCharacteristics.Age65To74 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("75-84 yrs", pSplits => result.AgeCharacteristics.Age75To84 = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("85+ yrs", pSplits => result.AgeCharacteristics.Age85Plus = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.AgeCharacteristics.AgeUnknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.UnderlyingConditionsCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.UnderlyingConditionsCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.UnderlyingConditionsCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Underlying clinical conditions", pSplits => { }),
+                                        new KeyValuePair<string, Action<string[]>>("Yes", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Yes = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("No", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.No = ParseAbsoluteAndPercent(pSplits)),
+                                        new KeyValuePair<string, Action<string[]>>("Unknown", pSplits => result.SymptomStatusAtTimeOfTestCharacteristics.Unknown = ParseAbsoluteAndPercent(pSplits)),
 
-                                        throw new InvalidDataException(
-                                            $"Expected line starting with '{entries[i].Key}' instead got: {lines[lineIndex]}");
                                     }
-                             
-                                    
-                                    splits = lines[lineIndex].Substring(entries[i].Key.Length)
-                                        .Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                                });
 
-                                    entries[i].Value();
-                  
-                                    lineIndex++;
-                                }
+                          
+
 
                                 gotCharacteristics = true;
                             }

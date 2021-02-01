@@ -31,22 +31,87 @@ namespace CovidStats
             this.Write("<Weeks>\r\n");
             
             #line 8 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
-    for(var i = 0;  i < Weeks.Count; i++) { 
+    
+ var allValueNames= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Values.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allValueNames.Sort();
+
+    var allFacilityResultSummary= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.AllFacilityTypesResultsSummary.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allFacilityResultSummary.Sort();
+
+    var allSchoolsTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Schools.Testing.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allSchoolsTesting.Sort();
+
+    var allSchoolsMassTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Schools.MassTesting.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allSchoolsMassTesting.Sort();
+
+
+
+   var allChildcareTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Childcare.Testing.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allChildcareTesting.Sort();
+
+    var allChildcareMassTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Childcare.MassTesting.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allChildcareMassTesting.Sort();
+for(var i = 0;  i < Weeks.Count; i++) { 
+
             
             #line default
             #line hidden
             this.Write("    <Week>\r\n        <Number>");
             
-            #line 10 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(Weeks[i].ChildcareFacilityByWeek.Last().Week));
+            #line 67 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(Weeks[i].Week));
             
             #line default
             #line hidden
-            this.Write("</Number>\r\n");
+            this.Write("</Number>\r\n        <SourceFileName>");
             
-            #line 11 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 68 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(Weeks[i].SourceFileName));
+            
+            #line default
+            #line hidden
+            this.Write("</SourceFileName>\r\n");
+            
+            #line 69 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
 
-        foreach(var val in Weeks[i].Values) {
+        foreach(var item in allValueNames ) {
+            var val= Weeks[i].Values.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "Overall"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "");
 
             
@@ -54,51 +119,52 @@ namespace CovidStats
             #line hidden
             this.Write("        <");
             
-            #line 15 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 74 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"Week"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 15 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 74 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.WeekValue));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 15 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 74 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"Week"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 16 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 75 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"Cumulative"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 16 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 75 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.CumulativeToDate));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 16 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 75 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"Cumulative"));
             
             #line default
             #line hidden
             this.Write(">\r\n");
             
-            #line 17 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 76 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
       } 
-        foreach(var val in Weeks[i].AllFacilityTypesResultsSummary) {
+        foreach(var item in allFacilityResultSummary) {
+            var val= Weeks[i].AllFacilityTypesResultsSummary.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "Overall"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 
             
@@ -106,114 +172,115 @@ namespace CovidStats
             #line hidden
             this.Write("        <");
             
-            #line 21 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 81 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 21 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 81 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoFacilities));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 21 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 81 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 22 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 82 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 22 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 82 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoTested));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 22 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 82 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 23 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 83 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 23 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 83 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 23 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 83 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 24 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 84 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 24 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 84 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoNotDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 24 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 84 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 25 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 85 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 25 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 85 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.DetectedPercent));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 25 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 85 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">\r\n");
             
-            #line 26 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 86 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
       } 
-        foreach(var val in Weeks[i].Schools.Testing) {
+        foreach(var item in allSchoolsTesting) {
+            var val= Weeks[i].Schools.Testing.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "SchoolsTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 
             
@@ -221,114 +288,115 @@ namespace CovidStats
             #line hidden
             this.Write("        <");
             
-            #line 30 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 91 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 30 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 91 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoFacilities));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 30 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 91 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 31 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 92 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 31 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 92 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoTested));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 31 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 92 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 32 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 93 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 32 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 93 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 32 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 93 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 33 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 94 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 33 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 94 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoNotDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 33 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 94 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 34 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 95 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 34 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 95 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.DetectedPercent));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 34 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 95 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">\r\n");
             
-            #line 35 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 96 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
       } 
-        foreach(var val in Weeks[i].Schools.MassTesting) {
+        foreach(var item in allSchoolsMassTesting) {
+            var val= Weeks[i].Schools.MassTesting.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "SchoolsMassTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 
             
@@ -336,114 +404,115 @@ namespace CovidStats
             #line hidden
             this.Write("        <");
             
-            #line 39 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 101 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 39 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 101 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoFacilities));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 39 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 101 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 40 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 102 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 40 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 102 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoTested));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 40 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 102 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 41 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 103 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 41 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 103 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 41 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 103 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 42 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 104 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 42 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 104 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoNotDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 42 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 104 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 43 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 105 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 43 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 105 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.DetectedPercent));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 43 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 105 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">\r\n");
             
-            #line 44 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 106 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
       } 
-        foreach(var val in Weeks[i].Childcare.Testing) {
+        foreach(var item in allChildcareTesting) {
+            var val= Weeks[i].Childcare.Testing.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "ChildcareTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 
             
@@ -451,114 +520,115 @@ namespace CovidStats
             #line hidden
             this.Write("        <");
             
-            #line 48 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 111 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 48 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 111 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoFacilities));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 48 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 111 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 49 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 112 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 49 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 112 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoTested));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 49 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 112 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 50 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 113 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 50 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 113 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 50 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 113 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 51 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 114 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 51 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 114 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoNotDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 51 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 114 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 52 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 115 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 52 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 115 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.DetectedPercent));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 52 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 115 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">\r\n");
             
-            #line 53 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 116 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
       } 
-        foreach(var val in Weeks[i].Childcare.MassTesting) {
+      foreach(var item in allChildcareMassTesting) {
+            var val= Weeks[i].Childcare.MassTesting.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "ChildcareMassTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 
             
@@ -566,119 +636,119 @@ namespace CovidStats
             #line hidden
             this.Write("        <");
             
-            #line 57 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 121 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 57 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 121 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoFacilities));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 57 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 121 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoFacilities"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 58 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 122 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 58 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 122 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoTested));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 58 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 122 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoTested"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 59 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 123 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 59 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 123 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 59 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 123 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 60 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 124 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 60 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 124 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.NoNotDetected));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 60 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 124 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"NoNotDetected"));
             
             #line default
             #line hidden
             this.Write(">\r\n        <");
             
-            #line 61 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 125 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">");
             
-            #line 61 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 125 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(val.DetectedPercent));
             
             #line default
             #line hidden
             this.Write("</");
             
-            #line 61 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 125 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(elementName+"DetectedPercent"));
             
             #line default
             #line hidden
             this.Write(">\r\n");
             
-            #line 62 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 126 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
       } 
             
             #line default
             #line hidden
             this.Write("    </Week>\r\n");
             
-            #line 64 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
+            #line 128 "C:\personal\CovidStats\CovidStats\SchoolWeeksXml.tt"
     }
             
             #line default

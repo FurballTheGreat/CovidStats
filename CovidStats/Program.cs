@@ -136,15 +136,33 @@ namespace CovidStats
         {
             var sources = new List<HseSchoolsSummary>();
             foreach (var file in Directory.GetFiles(pInputDir))
-                sources.Add(HseSchoolsSummary.LoadSummary(File.ReadAllBytes(file)));
+                sources.Add(HseSchoolsSummary.LoadSummary(File.ReadAllBytes(file), Path.GetFileName(file))); 
 
+            foreach(var source in sources)
+                if (source.Year == 2020)
+                {
+                   
+
+                } else if (source.Year == 2021 )
+                {
+                    if (source.Week != 52)
+                        source.Week += 53;
+                    else
+                    {
+                        source.Week = 53;
+                        source.Year = 2020;
+                    }
+                }
+
+            sources.Sort((pLeft, pRight)=>pLeft.Week.CompareTo(pRight.Week));
             var schoolsTemplate = new SchoolWeeksXml
             {
                 Session = new Dictionary<string, object> {{"Weeks", sources}}
             };
             schoolsTemplate.Initialize();
             var transformText = schoolsTemplate.TransformText();
-            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}Weeks.xml", transformText);
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}SchoolWeeks.xml", transformText);
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}SchoolWeeks.csv", XmlToCsv(transformText));
             var serial = new DataContractSerializer(typeof(HseSchoolsSummary));
             foreach (var week in sources)
             {

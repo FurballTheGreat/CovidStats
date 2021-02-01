@@ -5,17 +5,77 @@
 <#@ import namespace="CovidStats.SchoolsSummary" #>
 <#@ parameter type="System.Collections.Generic.List<CovidStats.SchoolsSummary.HseSchoolsSummary>" name="Weeks" #>
 <Weeks>
-<#    for(var i = 0;  i < Weeks.Count; i++) { #>
+<#    
+ var allValueNames= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Values.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allValueNames.Sort();
+
+    var allFacilityResultSummary= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.AllFacilityTypesResultsSummary.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allFacilityResultSummary.Sort();
+
+    var allSchoolsTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Schools.Testing.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allSchoolsTesting.Sort();
+
+    var allSchoolsMassTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Schools.MassTesting.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allSchoolsMassTesting.Sort();
+
+
+
+   var allChildcareTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Childcare.Testing.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allChildcareTesting.Sort();
+
+    var allChildcareMassTesting= Weeks.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.Values!=null)
+                        pList.AddRange(pItem.Childcare.MassTesting.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allChildcareMassTesting.Sort();
+for(var i = 0;  i < Weeks.Count; i++) { 
+#>
     <Week>
-        <Number><#= Weeks[i].ChildcareFacilityByWeek.Last().Week #></Number>
+        <Number><#= Weeks[i].Week #></Number>
+        <SourceFileName><#= Weeks[i].SourceFileName #></SourceFileName>
 <#
-        foreach(var val in Weeks[i].Values) {
+        foreach(var item in allValueNames ) {
+            var val= Weeks[i].Values.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "Overall"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "");
 #>
         <<#= elementName+"Week" #>><#= val.WeekValue #></<#= elementName+"Week" #>>
         <<#= elementName+"Cumulative" #>><#= val.CumulativeToDate #></<#= elementName+"Cumulative" #>>
 <#      } 
-        foreach(var val in Weeks[i].AllFacilityTypesResultsSummary) {
+        foreach(var item in allFacilityResultSummary) {
+            var val= Weeks[i].AllFacilityTypesResultsSummary.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "Overall"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 #>
         <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
@@ -24,7 +84,8 @@
         <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
         <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
 <#      } 
-        foreach(var val in Weeks[i].Schools.Testing) {
+        foreach(var item in allSchoolsTesting) {
+            var val= Weeks[i].Schools.Testing.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "SchoolsTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 #>
         <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
@@ -33,7 +94,8 @@
         <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
         <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
 <#      } 
-        foreach(var val in Weeks[i].Schools.MassTesting) {
+        foreach(var item in allSchoolsMassTesting) {
+            var val= Weeks[i].Schools.MassTesting.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "SchoolsMassTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 #>
         <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
@@ -42,7 +104,8 @@
         <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
         <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
 <#      } 
-        foreach(var val in Weeks[i].Childcare.Testing) {
+        foreach(var item in allChildcareTesting) {
+            var val= Weeks[i].Childcare.Testing.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "ChildcareTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 #>
         <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>
@@ -51,7 +114,8 @@
         <<#= elementName+"NoNotDetected" #>><#= val.NoNotDetected #></<#= elementName+"NoNotDetected" #>>
         <<#= elementName+"DetectedPercent" #>><#= val.DetectedPercent #></<#= elementName+"DetectedPercent" #>>
 <#      } 
-        foreach(var val in Weeks[i].Childcare.MassTesting) {
+      foreach(var item in allChildcareMassTesting) {
+            var val= Weeks[i].Childcare.MassTesting.FirstOrDefault(pX=>pX.Name==item);
             var elementName = "ChildcareMassTesting"+val.Name.Replace(" ", "").Replace("%", "").Replace("+", "").Replace("*", "");
 #>
         <<#= elementName+"NoFacilities" #>><#= val.NoFacilities #></<#= elementName+"NoFacilities" #>>

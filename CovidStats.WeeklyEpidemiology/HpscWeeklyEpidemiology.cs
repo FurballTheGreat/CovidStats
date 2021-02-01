@@ -81,6 +81,7 @@ namespace CovidStats.WeeklyEpidemiology
                         foreach (var rawLine in lines.Skip(1))
                         {
                             var line= rawLine.StartsWith("2021 ")? rawLine.Substring(5) : rawLine;
+                            if (line == "2021") continue;
                             var splits = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                             var entries = new List<HpscWeeklyHeatmapEntry>();
                             for (var j = 0; j < valNames.Length; j++)

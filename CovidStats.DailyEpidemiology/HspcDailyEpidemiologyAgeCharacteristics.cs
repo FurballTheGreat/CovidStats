@@ -17,5 +17,7 @@
         public HspcAbsoluteAndPercent Age75To84 { get; set; } = new HspcAbsoluteAndPercent();
         public HspcAbsoluteAndPercent Age85Plus { get; set; } = new HspcAbsoluteAndPercent();
         public HspcAbsoluteAndPercent AgeUnknown { get; set; } = new HspcAbsoluteAndPercent();
+        public HspcAbsoluteAndPercent Age5To14 { get; set; } = new HspcAbsoluteAndPercent();
+        public HspcAbsoluteAndPercent Age15To24 { get; set; } = new HspcAbsoluteAndPercent();
     }
 }

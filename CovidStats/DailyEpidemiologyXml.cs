@@ -67,7 +67,7 @@ namespace CovidStats
                     return pList;
                 }).Distinct().ToList();
     allCountyNames.Sort();
-    for(var i = Days.Min(pX=>pX.FromDate);  i < Days.Max(pX=>pX.FromDate); i= i.AddDays(1)) { 
+    for(var i = Days.Min(pX=>pX.FromDate);  i <= Days.Max(pX=>pX.FromDate); i= i.AddDays(1)) { 
         var current = Days.FirstOrDefault(pX=>pX.FromDate == i);
 
             

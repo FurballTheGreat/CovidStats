@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
+using UglyToad.PdfPig.Tokens;
 
 namespace CovidStats.SchoolsSummary
 {
@@ -22,6 +24,9 @@ namespace CovidStats.SchoolsSummary
 
         [DataMember]
         public int Week { get; set; }
+
+        [DataMember]
+        public int Year { get; set; }
 
         [DataMember]
         public HseSchoolsSummaryValue[] Values
@@ -49,8 +54,11 @@ namespace CovidStats.SchoolsSummary
         [DataMember]
         public HseSchoolsSummaryGraphValue[] SpecialEducationFacilityByWeek { get; set; }
 
+        [DataMember]
+        public string SourceFileName { get; set; }
 
-        public static HseSchoolsSummary LoadSummary(byte[] pBytes)
+
+        public static HseSchoolsSummary LoadSummary(byte[] pBytes, string pSourceFileName)
         {
             var weekRegex = new Regex(@" Week (?<weeknum>\d+) ");
 
@@ -77,7 +85,7 @@ namespace CovidStats.SchoolsSummary
 
                         yield return new HseSchoolsSummaryValue
                         {
-                            Name = pNames[i][0],
+                            Name = pNames[i][0].Replace(".",""),
                             CumulativeToDate = Decimal.Parse(splits[0].Replace(",", "").Replace("%", "")),
                             WeekValue = ParseValue(splits[1].Replace(",", ""))
 
@@ -131,12 +139,17 @@ namespace CovidStats.SchoolsSummary
 
             }
 
-            IEnumerable<HseSchoolsFacilityValue> ParseFacilityValues(string pText, string[] pNames) =>
-                ParseFacilityValuesWithVariations(pText, pNames.Select(pX => new[] { pX }).ToArray());
+            IEnumerable<HseSchoolsFacilityValue> ParseFacilityValues(string pText, (string,string)[] pNames) =>
+                ParseFacilityValuesWithVariations(pText, pNames.Select((pX)=>
+                {
 
-            IEnumerable<HseSchoolsFacilityValue> ParseFacilityValuesWithVariations(string pText, string[][] pNames)
+                    var (displayName, intName) = pX;
+                    return (displayName, new string[] {intName});
+                }).ToArray());
+
+            IEnumerable<HseSchoolsFacilityValue> ParseFacilityValuesWithVariations(string pText, (string,string[])[] pNames)
             {
-                HseSchoolsFacilityValue GetValue(string[] pName)
+                HseSchoolsFacilityValue GetValue(string[] pName, string pDisplayName)
                 {
                     foreach (var name in pName)
                     {
@@ -146,7 +159,7 @@ namespace CovidStats.SchoolsSummary
                         var splits = substr.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                         return new HseSchoolsFacilityValue
                         {
-                            Name = pName.First(),
+                            Name = pDisplayName,
                             NoFacilities = ParseNoDetected(splits[0]),
                             NoTested = ParseNoDetected(splits[1]),
                             NoDetected = ParseNoDetected(splits[2]),
@@ -162,12 +175,13 @@ namespace CovidStats.SchoolsSummary
 
                 for (var i = 0; i < pNames.Length; i++)
                 {
-                    var value = GetValue(pNames[i]);
+                    var (displayName, intNames) = pNames[i];
+                    var value = GetValue(intNames, displayName);
                     runningTotal.Add(value);
                     yield return value;
                 }
 
-                var totalsValue = GetValue(new[] { "Total" });
+                var totalsValue = GetValue(new[] { "Total" }, "Total");
                 runningTotal.DetectedPercent = Math.Round((decimal)100 * runningTotal.NoDetected / runningTotal.NoTested, 1);
                 if (!totalsValue.Equals(runningTotal))
                     Console.WriteLine($"WARNING - Calculated totals: {runningTotal}\nDo not match totals in source PDF: {totalsValue}");
@@ -199,7 +213,7 @@ namespace CovidStats.SchoolsSummary
             }
 
             var result = new HseSchoolsSummary();
-
+            result.SourceFileName = pSourceFileName;
             IEnumerable<HseSchoolsSummaryGraphValue> ParseGraphValues(
                 string pText, 
                 string[] pValuesFrom, 
@@ -213,19 +227,34 @@ namespace CovidStats.SchoolsSummary
                 var weeksText = CutToFromHeading(pText,
                     pWeeksFrom,
                     pWeeksTo);
-                var weeks = ExtractNumbers(weeksText).ToArray();
-                if(weeks.Length!=values.Length) 
+                var weeks = ExtractNumbers(weeksText).ToArray().ToList();
+                var hit53 = false;
+                for(var i = 0; i < weeks.Count; i++)
+                    if (hit53)
+                        weeks[i] += 53;
+                    else if (i == 53) hit53 = true;
+
+                while(weeks.Count<values.Length)
+                    weeks.Insert(0, weeks.Min()-1);
+                
+                if(weeks.Count!=values.Length) 
                     throw new InvalidDataException("Lengths of week and value lists are not the same");
-                for(var i = 0; i < weeks.Length; i++)
+                for(var i = 0; i < weeks.Count; i++)
                     yield return new HseSchoolsSummaryGraphValue { Value = Int32.Parse(values[i]), Week = weeks[i]};
             }
 
-
+            var regex = new Regex(@"Data up to \d+:\d+\w+ \d+\w+ \w+ (?<Year>\d\d\d\d)");
             using (var pdf = PdfDocument.Open(pBytes))
             {
                 foreach (var page in pdf.GetPages())
                 {
                     var rawText = page.Text;
+                    var matches = regex.Matches(rawText);
+                    if (matches.Count > 0)
+                    {
+                        var year = matches.First().Groups["Year"].Captures.First().Value;
+                        result.Year = Int32.Parse(year);
+                    }
                     if (result.Week == 0)
                     {
                         foreach (Match match in weekRegex.Matches(rawText))
@@ -254,10 +283,10 @@ namespace CovidStats.SchoolsSummary
                         });
                         result.AllFacilityTypesResultsSummary = ParseFacilityValuesWithVariations(allTypes, new[]
                         {
-                            new []{ "Childcare" } ,
-                            new []{ "Primary" } ,
-                            new []{ "Post Primary*", "Post Primary" } ,
-                            new []{ "Special Education" }
+                            ("Childcare", new []{ "Childcare" } ),
+                            ("Primary",new []{ "Primary" } ) ,
+                            ("PostPrimary", new []{ "Post Primary*", "Post Primary" } ),
+                            ("SpecialEducation", new []{ "Special Education" })
                         }).ToArray();
 
                     }
@@ -265,18 +294,18 @@ namespace CovidStats.SchoolsSummary
                     {
                         result.Schools.Testing = ParseFacilityValuesWithVariations(rawText, new[]
                         {
-                           new[]{ "Primary" },
-                           new[]{ "Post Primary*", "Post Primary" }, 
-                           new[]{ "Special Education" }
+                           ("Primary", new[]{ "Primary" } ),
+                           ("PostPrimary", new[]{ "Post Primary*", "Post Primary" }), 
+                           ("SpecialEducation", new[]{ "Special Education" } )
                         }).ToArray();
 
                         var remainingText = CutToHeading(rawText, "Table 4 Results Summary for Schools Testing", "Table 4 Results Summary for Schools Testing WK");
 
-                        result.Schools.MassTesting = ParseFacilityValues(remainingText, new[]
+                        result.Schools.MassTesting = ParseFacilityValuesWithVariations(remainingText, new[]
                         {
-                            "Primary",
-                            "Post Primary",
-                            "Special Education"
+                             ("Primary", new[]{ "Primary*", "Primary" }),
+                             ("PostPrimary", new[]{ "Post Primary*", "Post Primary" }),
+                             ("SpecialEducation",new[]{ "Special Education**", "Special Education" })
                         }).ToArray();
                     }
                     else if (rawText.Contains("Summary of Childcare Facility Testing") || rawText.Contains("Summary of Childcare Facilities Testing"))
@@ -285,11 +314,11 @@ namespace CovidStats.SchoolsSummary
 
                         result.Childcare.Testing = ParseFacilityValuesWithVariations(table7Text, new[]
                         {
-                            new []
+                            ("", new []
                             {
                                 "Childcare facilities",
                                 "Childcare"
-                            },
+                            }),
                         }).ToArray();
 
                         var table8Text = CutToFromHeading(CutToHeading(rawText, "Table 8 Results Summary", "Table 8 Results Summary"),
@@ -297,40 +326,42 @@ namespace CovidStats.SchoolsSummary
 
                         result.Childcare.MassTesting = ParseFacilityValuesWithVariations(table8Text, new[]
                         {
-                            new []
+                            ("", new []
                             {
+                                "No. Not Detected Childcare facilities",
                                 "Childcare facilities",
                                 "Childcare"
-                            },
+                            }),
                         }).ToArray();
                     } else if (rawText.Contains(
                         "4. Supporting Graphs"))
                     {
-                        result.ChildcareFacilityByWeek = ParseGraphValues(
-                            ContentOrderTextExtractor.GetText(page),
-                            new[]
-                            {
-                                "Figure 11 Weekly Analysis of Childcare Facility Testing by Week",
-                                "Table 11 Weekly Analysis of Childcare Facility Testing by Week"
-                            },
-                            new[] {"-100.0%"},
-                            new[] {"4000"},
-                            new[] {"Weekly Comparison of Tests Completed"}
-                        ).ToArray();
+                        //result.ChildcareFacilityByWeek = ParseGraphValues(
+                        //    ContentOrderTextExtractor.GetText(page),
+                        //    new[]
+                        //    {
+                        //        "Total Tested % weekly increase/ decrease",
+                        //        "Table 11 Weekly Analysis of Childcare Facility Testing by Week",
+                        //    },
+                        //    new[] { "-600%", "-150%" },
+                        //    new[] {"WK","4000"},
+                        //    new[] {"Weekly Comparison of Tests Completed"}
+                        //).ToArray();
 
 
-                        result.SpecialEducationFacilityByWeek = ParseGraphValues(
-                            ContentOrderTextExtractor.GetText(page),
-                            new[]
-                            {
-                                "Total Tested % weekly increase/ decrease",
-                                
-                            },
-                            new[] { "-150%" },
-                            new[] { "900" },
-                            new[] { "Weekly Comparison of Tests Completed in Childcare Facilities" }
-                        ).ToArray();
-                        var altText = ContentOrderTextExtractor.GetText(page);
+                        //result.SpecialEducationFacilityByWeek = ParseGraphValues(
+                        //    ContentOrderTextExtractor.GetText(page),
+                        //    new[]
+                        //    {
+                        //        "Figure 11 Weekly Analysis of Childcare Facility Testing by Week",
+                        //        "Table 11 Weekly Analysis of Childcare Facility Testing by Week",
+                        //    },
+                        //    new[] { "-150%", "-100.0%" },
+                           
+                        //    new[] { "900" , "1200" },
+                        //    new[] { "Weekly Comparison of Tests Completed in Childcare Facilities" }
+                        //).ToArray();
+                        //var altText = ContentOrderTextExtractor.GetText(page);
                        
 
                     }
