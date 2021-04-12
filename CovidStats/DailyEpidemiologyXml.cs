@@ -609,9 +609,37 @@ namespace CovidStats
             
             #line default
             #line hidden
-            this.Write("    </Day>\r\n");
+            this.Write("        <ImportedCasesAbs>");
+            
+            #line 119 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.ImportedCases.Absolute.ToString() : "")));
+            
+            #line default
+            #line hidden
+            this.Write("</ImportedCasesAbs>\r\n        <ImportedCasesPcnt>");
             
             #line 120 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.ImportedCases.Percent.ToString() : "")));
+            
+            #line default
+            #line hidden
+            this.Write("</ImportedCasesPcnt>\r\n        <TravelRelatedCasesAbs>");
+            
+            #line 121 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.TravelRelatedCases.Absolute.ToString() : "")));
+            
+            #line default
+            #line hidden
+            this.Write("</TravelRelatedCasesAbs>\r\n        <TravelRelatedCasesPcnt>");
+            
+            #line 122 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture((current!=null ? current.TravelRelatedCases.Percent.ToString() : "")));
+            
+            #line default
+            #line hidden
+            this.Write("</TravelRelatedCasesPcnt>\r\n    </Day>\r\n");
+            
+            #line 124 "C:\personal\CovidStats\CovidStats\DailyEpidemiologyXml.tt"
     }
             
             #line default

@@ -1,0 +1,39 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="CovidStates.OperationsUpdate" #>
+<#@ parameter type="System.Collections.Generic.List<CovidStates.OperationsUpdate.HseOperationsUpdate>" name="Days" #>
+<Days>
+<#  
+    var allhospitalNames= Days.Aggregate(new List<string>(),
+                (pList, pItem) =>
+                {
+                    if(pItem.TotalConfirmed!=null)
+                        pList.AddRange(pItem.TotalConfirmed.Select(pX => pX.Name));
+                    return pList;
+                }).Distinct().ToList();
+    allhospitalNames.Sort();
+
+   
+    for(var i = Days.Min(pX=>pX.CoverDate);  i <= Days.Max(pX=>pX.CoverDate); i= i.AddDays(1)) { 
+        var current = Days.FirstOrDefault(pX=>pX.CoverDate == i);
+#>
+    <Day>
+        <SourceFileName><#= (current?.SourceFileName ?? "MISSING") #></SourceFileName>
+        <CoverDate><#= (current!=null ? current.CoverDate.ToShortDateString() : "") #></CoverDate><#
+        foreach(var cho in allhospitalNames) {
+            var cho2= cho.Replace(" ", "").Replace(",", "").Replace("'","");
+            var incTotal = current?.TotalConfirmed?.FirstOrDefault(pX=>pX.Name==cho);
+            var incTotal24hrs = current?.TotalConfirmedLast24hrs?.FirstOrDefault(pX=>pX.Name==cho);
+            var incTotalSuspected = current?.TotalSuspected?.FirstOrDefault(pX=>pX.Name==cho);
+#>
+        <<#= cho2 #>Confirmed><#= (incTotal!=null ? incTotal.Count.ToString() : "") #></<#= cho2 #>Confirmed>
+        <<#= cho2 #>Confirmed24hrs><#= (incTotal24hrs!=null ? incTotal24hrs.Count.ToString() : "") #></<#= cho2 #>Confirmed24hrs>
+        <<#= cho2 #>Suspected><#= (incTotalSuspected!=null ? incTotalSuspected.Count.ToString() : "") #></<#= cho2 #>Suspected>
+<#
+        }
+#>
+    </Day>
+<#    }#>
+</Days>

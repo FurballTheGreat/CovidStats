@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CovidStates.OperationsUpdate\CovidStates.OperationsUpdate.csproj" />
     <ProjectReference Include="..\CovidStats.DailyEpidemiology\CovidStats.DailyEpidemiology.csproj" />
     <ProjectReference Include="..\CovidStats.SchoolsSummary\CovidStats.SchoolsSummary.csproj" />
     <ProjectReference Include="..\CovidStats.WeeklyEpidemiology\CovidStats.WeeklyEpidemiology.csproj" />
@@ -25,6 +26,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>DailyEpidemiologyXml.tt</DependentUpon>
     </Compile>
+    <Compile Update="HseOpsUpdate.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>HseOpsUpdate.tt</DependentUpon>
+    </Compile>
     <Compile Update="SchoolWeeksXml.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -38,6 +44,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="HseOpsUpdate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>HseOpsUpdate.cs</LastGenOutput>
+    </None>
     <None Update="WeeklyIncidenceRatesXml.tt">
       <LastGenOutput>WeeklyIncidenceRatesXml.cs</LastGenOutput>
       <Generator>TextTemplatingFilePreprocessor</Generator>

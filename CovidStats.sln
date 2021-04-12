@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CovidStats", "CovidStats\Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CovidStats.SchoolsSummary", "CovidStats.SchoolsSummary\CovidStats.SchoolsSummary.csproj", "{504385C6-B937-4C90-BA6E-7622177BEA5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CovidStats.DailyEpidemiology", "CovidStats.DailyEpidemiology\CovidStats.DailyEpidemiology.csproj", "{0D45839E-C011-4178-A99A-E3B6B1813B03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CovidStats.DailyEpidemiology", "CovidStats.DailyEpidemiology\CovidStats.DailyEpidemiology.csproj", "{0D45839E-C011-4178-A99A-E3B6B1813B03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CovidStats.WeeklyEpidemiology", "CovidStats.WeeklyEpidemiology\CovidStats.WeeklyEpidemiology.csproj", "{E8DC25A2-33C4-4EEA-BA21-D8944BF3C8E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CovidStats.WeeklyEpidemiology", "CovidStats.WeeklyEpidemiology\CovidStats.WeeklyEpidemiology.csproj", "{E8DC25A2-33C4-4EEA-BA21-D8944BF3C8E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CovidStates.OperationsUpdate", "CovidStates.OperationsUpdate\CovidStates.OperationsUpdate.csproj", "{67403714-C24C-48AE-BE81-F2C442739DCC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{E8DC25A2-33C4-4EEA-BA21-D8944BF3C8E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8DC25A2-33C4-4EEA-BA21-D8944BF3C8E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8DC25A2-33C4-4EEA-BA21-D8944BF3C8E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67403714-C24C-48AE-BE81-F2C442739DCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67403714-C24C-48AE-BE81-F2C442739DCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67403714-C24C-48AE-BE81-F2C442739DCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67403714-C24C-48AE-BE81-F2C442739DCC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

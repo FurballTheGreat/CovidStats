@@ -116,6 +116,10 @@
 <#
         }
 #>
+        <ImportedCasesAbs><#= (current!=null ? current.ImportedCases.Absolute.ToString() : "") #></ImportedCasesAbs>
+        <ImportedCasesPcnt><#= (current!=null ? current.ImportedCases.Percent.ToString() : "") #></ImportedCasesPcnt>
+        <TravelRelatedCasesAbs><#= (current!=null ? current.TravelRelatedCases.Absolute.ToString() : "") #></TravelRelatedCasesAbs>
+        <TravelRelatedCasesPcnt><#= (current!=null ? current.TravelRelatedCases.Percent.ToString() : "") #></TravelRelatedCasesPcnt>
     </Day>
 <#    }#>
 </Days>

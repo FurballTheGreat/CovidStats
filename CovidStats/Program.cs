@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
+using CovidStates.OperationsUpdate;
 using CovidStats.DailyEpidemiology;
 using CovidStats.SchoolsSummary;
 using CovidStats.WeeklyEpidemiology;
@@ -21,7 +22,8 @@ namespace CovidStats
             {
                 {"parseschools", () => ParseSchoolsMassTestingReports(args[1], args[2])},
                 {"parsedaily", () => ParseDailyReports(args[1], args[2], args[3])},
-                {"parseweekly", () => ParseWeeklyReports(args[1], args[2])}
+                {"parseweekly", () => ParseWeeklyReports(args[1], args[2])},
+                {"parseops", () => ParseOpReports(args[1], args[2])}
             };
             var command = args[0].ToLowerInvariant();
             if (options.ContainsKey(command))
@@ -32,6 +34,39 @@ namespace CovidStats
             }
             
             
+        }
+
+        private static void ParseOpReports(string pInputDir, string pOutputDir)
+        {
+            var files = new List<HseOperationsUpdate>();
+            foreach (var file in Directory.GetFiles(pInputDir))
+            {
+                Console.WriteLine($"Processing {file}");
+                var result = HseOperationsUpdate.Load(File.ReadAllBytes(file), Path.GetFileName(file));
+                files.Add(result);
+            }
+
+            files.RemoveAll(pX=>pX.CoverDate.Year==1);
+            files.Sort((pLeft,pRight)=>pLeft.CoverDate.CompareTo(pRight.CoverDate));
+
+            var schoolsTemplate = new HseOpsUpdate()
+            {
+                Session = new Dictionary<string, object> { { "Days", files } }
+            };
+            schoolsTemplate.Initialize();
+            var transformText = schoolsTemplate.TransformText();
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}OpsDays.xml", transformText);
+            File.WriteAllText($"{pOutputDir}{Path.DirectorySeparatorChar}OpsDays.csv", XmlToCsv(transformText));
+
+            var serial = new DataContractSerializer(typeof(HseOperationsUpdate));
+            foreach (var week in files)
+            {
+                using var file = File.Create($"{pOutputDir}{Path.DirectorySeparatorChar}DailyWeekFrom-{week.CoverDate:yyyyMMdd}.xml");
+                using var writer = XmlWriter.Create(file, new XmlWriterSettings { Indent = true });
+                serial.WriteObject(writer, week);
+                writer.Flush();
+                file.Flush();
+            }
         }
 
 
